@@ -3,4 +3,5 @@ COMP90015 SM1 2017 Project 1 - EZShare Resource Sharing Network
 
 Team Members:
 Harry,
-Timmy, Testing own rep
+Timmy, Testing own repository
+Yancc
