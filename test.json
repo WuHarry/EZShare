@@ -1,0 +1,25 @@
+{
+  "command": "PUBLISH",
+  "resource": {
+    "name": "Unimelb website",
+    "tags": [
+      "web",
+      "html"
+    ],
+    "description": "The main page for the University of Melbourne",
+    "uri": "http:\/\/www.unimelb.edu.au",
+    "channel": "",
+    "owner": "",
+    "ezserver": null
+  },
+  "serverList": [
+    {
+      "hostname": "115.146.85.165",
+      "port": 3780
+    },
+    {
+      "hostname": "115.146.85.24",
+      "port": 3780
+    }
+  ]
+}
