@@ -1,6 +1,4 @@
-import com.google.gson.JsonObject;
-
-import java.util.Arrays;
+import JSON.JSONReader;
 
 /**
  * Created by harry on 2017/3/29.
@@ -32,5 +30,7 @@ public class test {
                 System.out.println(t);
             }
         }
+
+        Connection.clientCli(args);
     }
 }

@@ -1,12 +1,14 @@
+package JSON;
+
 /**
- * Created by Yahang Wu on 2017/3/30.
+ * Created by Yahang Wu on 2017/3/31.
  * COMP90015 Distributed System Project1 EZServer
+ * This file provide the methods to read JSON file
+ * required in the EZServer
  */
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.Arrays;
-
 import com.google.gson.*;
 
 public class JSONReader {
@@ -26,35 +28,35 @@ public class JSONReader {
         }
     }
 
-    String getCommand() {
+    public String getCommand() {
         return object.get("command").getAsString();
     }
 
-    JsonObject getResources() {
+    public JsonObject getResources() {
         return resource;
     }
 
-    String getResourceName() {
+    public String getResourceName() {
         return resource.get("name").getAsString();
     }
 
-    String getResourceDescription() {
+    public String getResourceDescription() {
         return resource.get("description").getAsString();
     }
 
-    String getResourceUri() {
+    public String getResourceUri() {
         return resource.get("uri").getAsString();
     }
 
-    String getResourceChannel() {
+    public String getResourceChannel() {
         return resource.get("channel").getAsString();
     }
 
-    String getResourceOwner() {
+    public String getResourceOwner() {
         return resource.get("owner").getAsString();
     }
 
-    String getResourceEZserver() {
+    public String getResourceEZserver() {
         JsonElement server = resource.get("ezserver");
         if (server == null) {
             return "";
@@ -63,7 +65,7 @@ public class JSONReader {
         }
     }
 
-    String[] getResourceTags() {
+    public String[] getResourceTags() {
         JsonArray array = resource.getAsJsonArray("tags");
         String[] tags = new String[array.size()];
 
@@ -73,15 +75,15 @@ public class JSONReader {
         return tags;
     }
 
-    String getSecret() {
+    public String getSecret() {
         return object.get("secret").getAsString();
     }
 
-    Boolean getRelay() {
+    public Boolean getRelay() {
         return object.get("relay").getAsBoolean();
     }
 
-    JsonObject getResourceTemplate() {
+    public JsonObject getResourceTemplate() {
         return object.get("resourceTemplate").getAsJsonObject();
     }
 
@@ -89,7 +91,7 @@ public class JSONReader {
      * The first index of the array would contains the first hostname and port
      * The second index would contains the second
      */
-    String[][] getServerList() {
+    public String[][] getServerList() {
         String[][] serverList = new String[2][2];
         JsonArray list = object.get("serverList").getAsJsonArray();
         for (int i = 0; i < list.size(); i++) {
