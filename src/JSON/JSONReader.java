@@ -9,6 +9,7 @@ package JSON;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+
 import com.google.gson.*;
 
 public class JSONReader {
@@ -23,7 +24,8 @@ public class JSONReader {
             object = (JsonObject) parse.parse(new FileReader(fileName));
             resource = object.get("resource").getAsJsonObject();
 
-        } catch (JsonIOException | JsonSyntaxException | FileNotFoundException e) {
+        } catch (JsonIOException | JsonSyntaxException |
+                FileNotFoundException e) {
             e.printStackTrace();
         }
     }

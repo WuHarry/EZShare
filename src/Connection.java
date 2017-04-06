@@ -35,9 +35,11 @@ public class Connection {
         options.addOption("channel", true, "channel");
         options.addOption("debug", false, "print debug information");
         options.addOption("description", true, "resource description");
-        options.addOption("exchange", false, "exchange server list with server");
+        options.addOption("exchange", false,
+                "exchange server list with server");
         options.addOption("fetch", false, "fetch resources from server");
-        options.addOption("host", true, "server host, a domain name or IP address");
+        options.addOption("host", true,
+                "server host, a domain name or IP address");
         options.addOption("name", true, "resource name");
         options.addOption("owner", true, "owner");
         options.addOption("port", true, "server port, an integer");
@@ -45,7 +47,8 @@ public class Connection {
         options.addOption("query", false, "query for resources from server");
         options.addOption("remove", false, "remove resource from server");
         options.addOption("secret", true, "secret");
-        options.addOption("servers", true, "server list, host1:port1,host2:port2,...");
+        options.addOption("servers", true,
+                "server list, host1:port1,host2:port2,...");
         options.addOption("share", false, "share resource on server");
         options.addOption("tags", true, "resource tags, tag1,tag2,tag3,...");
         options.addOption("uri", true, "resource URI");
@@ -199,8 +202,10 @@ public class Connection {
         Options options = new Options();
 
         options.addOption("advertisedhostname", true, "advertised hostname");
-        options.addOption("connectionintervallimit", true, "connection interval limit in seconds");
-        options.addOption("exchangeinterval", true, "exchange interval in seconds");
+        options.addOption("connectionintervallimit", true,
+                "connection interval limit in seconds");
+        options.addOption("exchangeinterval", true,
+                "exchange interval in seconds");
         options.addOption("port", true, "server port, an integer");
         options.addOption("secret", true, "secret");
         options.addOption("debug", false, "print debug information");
@@ -219,24 +224,31 @@ public class Connection {
 
         if (cmd.hasOption("advertisedhostname")) {
             advertisedHostname += cmd.getOptionValue("advertisedhostname");
-            System.out.println("advertisedhostname succeed: " + advertisedHostname);
+            System.out.println("advertisedhostname succeed: " +
+                    advertisedHostname);
         } else {
             System.out.println(advertisedHostname);
         }
 
         if (cmd.hasOption("connectionintervallimit")) {
-            connectionIntervalLimit = cmd.getOptionValue("connectionintervallimit");
-            System.out.println("connectionintervallimit succeed: " + connectionIntervalLimit);
+            connectionIntervalLimit =
+                    cmd.getOptionValue("connectionintervallimit");
+            System.out.println("connectionintervallimit succeed: " +
+                    connectionIntervalLimit);
         } else {
-            connectionIntervalLimit = "The user does not provide connection interval limit";
+            connectionIntervalLimit =
+                    "The user does not provide connection interval limit";
             System.out.println(connectionIntervalLimit);
         }
 
         if (cmd.hasOption("exchangeinterval")) {
-            exchangeInterval += Integer.parseInt(cmd.getOptionValue("exchangeinterval"));
-            System.out.println("Exchange interval succeed: " + exchangeInterval);
+            exchangeInterval +=
+                    Integer.parseInt(cmd.getOptionValue("exchangeinterval"));
+            System.out.println("Exchange interval succeed: " +
+                    exchangeInterval);
         } else {
-            System.out.println("default exchange interval: " + exchangeInterval);
+            System.out.println("default exchange interval: " +
+                    exchangeInterval);
         }
 
         if (cmd.hasOption("port")) {
