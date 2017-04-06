@@ -13,3 +13,8 @@ hs_err_pid*
 
 # IDE IDEA config file
 /.idea/
+/bin/
+
+.classpath
+
+.project
