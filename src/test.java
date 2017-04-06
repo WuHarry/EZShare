@@ -34,7 +34,6 @@ public class test {
             }
         }
 
-        //Connection.clientCli(args);
-        Connection.serverCli(args);
+
     }
 }

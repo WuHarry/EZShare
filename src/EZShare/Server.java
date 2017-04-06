@@ -1,4 +1,10 @@
-package ClientServer;
+package EZShare;
+
+import JSON.JSONReader;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 
 import javax.net.ServerSocketFactory;
 import java.io.DataInputStream;
@@ -15,7 +21,7 @@ import java.util.logging.Logger;
 
 public class Server {
 
-    private static int port = 3000;
+    private static int port = 4000;
     private static int counter = 0;
 
     public static void main(String[] args) {
@@ -45,9 +51,13 @@ public class Server {
             //output stream
             DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
 
-            System.out.println("ClientServer: " + input.readUTF());
+            String jsonString = input.readUTF();
+            System.out.println("ClientServer: " + jsonString);
 
-            output.writeUTF("Hi client " + counter);
+            JsonParser parser =  new JsonParser();
+            JsonObject json = (JsonObject) parser.parse(jsonString);
+
+            output.writeUTF("Hi, client " + counter + "!");
             output.flush();
 
         } catch (IOException ex) {

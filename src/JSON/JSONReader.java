@@ -30,6 +30,11 @@ public class JSONReader {
         }
     }
 
+    public JSONReader(JsonObject object){
+        this.object = object;
+        this.resource = object.get("resource").getAsJsonObject();
+    }
+
     public String getCommand() {
         return object.get("command").getAsString();
     }

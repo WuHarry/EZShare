@@ -1,10 +1,16 @@
+package Connection;
+
 /**
  * Created by Yahang Wu on 2017/4/5.
  * COMP90015 Distributed System Project1 EZServer
  * This file provide the methods to read the command line
  * and get instruction from the command line
+ * Also, it read the command line and convert it to the json string
+ * in order to sent to the server
  */
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
@@ -14,21 +20,31 @@ import org.apache.commons.cli.HelpFormatter;
 
 public class Connection {
 
+    //Debug Mode, true is on, false is off.
+    public boolean debugSwitch = false;
+    public String host = "localhost";
+    public int port = 3000;
+
+    String channel = "my_private_channel";
+    String description = "";
+    String name = "";
+    String owner = "";
+    String secret = "";
+    String ezserver = null;
+    String servers = "";
+    String tags = "";
+    String uri = "file:\\/\\/\\/\\/home\\/aaron\\/EZShare\\/ezshare.jar";
+    JsonArray tagsArray = new JsonArray();
+
     /**
      * @param args the command line arguments
+     * @return commandObject.toString() the json string which contains
+     * the command and attributes
      */
-    public static void clientCli(String[] args) {
+    public String clientCli(String[] args) {
 
-        String channel = "";
-        String description = "";
-        String host = "";
-        String name = "";
-        String owner = "";
-        int port = 0;
-        String secret = "";
-        String server = "";
-        String tags = "";
-        String uri = "";
+        //To create the json object from the command line
+        JsonObject commandObject = new JsonObject();
 
         Options options = new Options();
 
@@ -65,132 +81,145 @@ public class Connection {
 
         assert cmd != null;
 
-        if (cmd.hasOption("channel")) {
-            channel = cmd.getOptionValue("channel");
-            System.out.println("channel succeed: " + channel);
-        } else {
-            channel = "The user does not provide channel";
-            System.out.println(channel);
-        }
-
-        if (cmd.hasOption("debug")) {
-            System.out.println("debug succeed");
-        } else {
-            System.out.println("debug failed");
-        }
-
-        if (cmd.hasOption("description")) {
-            description = cmd.getOptionValue("description");
-            System.out.println("description succeed: " + description);
-        } else {
-            description = "The user does not provide description";
-            System.out.println(description);
-        }
-
-        if (cmd.hasOption("exchange")) {
-            System.out.println("exchange succeed");
-        } else {
-            System.out.println("exchange failed");
-        }
-
-        if (cmd.hasOption("fetch")) {
-            System.out.println("fetch succeed");
-        } else {
-            System.out.println("fetch failed");
-        }
-
         if (cmd.hasOption("host")) {
             host = cmd.getOptionValue("host");
-            System.out.println("host succeed: " + host);
-        } else {
-            host = "The user does not provide host";
-            System.out.println(host);
-        }
-
-        if (cmd.hasOption("name")) {
-            name = cmd.getOptionValue("name");
-            System.out.println("name succeed: " + name);
-        } else {
-            name = "The user does not provide name";
-            System.out.println(name);
-        }
-
-        if (cmd.hasOption("owner")) {
-            owner = cmd.getOptionValue("owner");
-            System.out.println("owner succeed: " + owner);
-        } else {
-            owner = "The user does not provide owner";
-            System.out.println(owner);
         }
 
         if (cmd.hasOption("port")) {
             port = Integer.parseInt(cmd.getOptionValue("port"));
-            System.out.println("port succeed: " + port);
-        } else {
-            System.out.println("port failed, port remain: " + port);
         }
 
-        if (cmd.hasOption("publish")) {
-            System.out.println("publish succeed");
-        } else {
-            System.out.println("publish failed");
-        }
-
-        if (cmd.hasOption("query")) {
-            System.out.println("query succeed");
-        } else {
-            System.out.println("query failed");
-        }
-
-        if (cmd.hasOption("remove")) {
-            System.out.println("remove succeed");
-        } else {
-            System.out.println("remove failed");
+        if (cmd.hasOption("debug")) {
+            debugSwitch = true;
         }
 
         if (cmd.hasOption("secret")) {
             secret = cmd.getOptionValue("secret");
-            System.out.println("secret succeed: " + secret);
-        } else {
-            secret = "The user does not provide secret";
-            System.out.println(secret);
         }
 
-        if (cmd.hasOption("server")) {
-            server = cmd.getOptionValue("server");
-            System.out.println("server succeed: " + server);
-        } else {
-            server = "The user does not provide server";
-            System.out.println(server);
+        if (cmd.hasOption("name")) {
+            name = cmd.getOptionValue("name");
         }
 
-        if (cmd.hasOption("share")) {
-            System.out.println("share succeed");
-        } else {
-            System.out.println("share failed");
+        if (cmd.hasOption("channel")) {
+            channel = cmd.getOptionValue("channel");
+        }
+
+        if (cmd.hasOption("description")) {
+            description = cmd.getOptionValue("description");
         }
 
         if (cmd.hasOption("tags")) {
             tags = cmd.getOptionValue("tags");
-            System.out.println("tags succeed: " + tags);
-        } else {
-            tags = "The user does not provide tags";
-            System.out.println(tags);
+            String[] array = tags.split(",");
+            for (String str : array) {
+                tagsArray.add(str);
+            }
         }
 
         if (cmd.hasOption("uri")) {
             uri = cmd.getOptionValue("uri");
-            System.out.println("uri succeed: " + uri);
-        } else {
-            uri = "The user does not provide uri";
-            System.out.println(uri);
         }
+
+        if (cmd.hasOption("owner")) {
+            owner = cmd.getOptionValue("owner");
+        }
+
+        if (cmd.hasOption("servers")) {
+            servers = cmd.getOptionValue("servers");
+        }
+
+        if (cmd.hasOption("publish") && commandObject.get("command") == null) {
+            commandObject.addProperty("command", "PUBLISH");
+            JsonObject resource = new JsonObject();
+            resourceGenerator(resource);
+            commandObject.add("resource", resource);
+
+            return commandObject.toString();
+        }
+
+        if (cmd.hasOption("query") && commandObject.get("command") == null) {
+            commandObject.addProperty("command", "QUERY");
+            commandObject.addProperty("relay", true);
+            JsonObject resorceTemplate = new JsonObject();
+            resourceGenerator(resorceTemplate);
+            commandObject.add("resourceTemplate", resorceTemplate);
+
+            return commandObject.toString();
+        }
+
+        if (cmd.hasOption("remove") && commandObject.get("command") == null) {
+            commandObject.addProperty("command", "REMOVE");
+            JsonObject resource = new JsonObject();
+            resourceGenerator(resource);
+            commandObject.add("resource", resource);
+
+            return commandObject.toString();
+        }
+
+        if (cmd.hasOption("share") && commandObject.get("command") == null) {
+            commandObject.addProperty("command", "SHARE");
+            commandObject.addProperty("secret", secret);
+            JsonObject resource = new JsonObject();
+            resourceGenerator(resource);
+            commandObject.add("resource", resource);
+
+            return commandObject.toString();
+        }
+
+        if (cmd.hasOption("exchange") && commandObject.get("command") == null) {
+            commandObject.addProperty("command", "EXCHANGE");
+
+            JsonObject server1 = new JsonObject();
+            JsonObject server2 = new JsonObject();
+
+            String[] list = servers.split(",");
+            String[] hostOne = list[0].split(":");
+            String[] hostTwo = list[1].split(":");
+            server1.addProperty("hostname", hostOne[0]);
+            server1.addProperty("port", hostOne[1]);
+            server2.addProperty("hostname", hostTwo[0]);
+            server2.addProperty("port", hostTwo[1]);
+
+            JsonArray serverList = new JsonArray();
+            serverList.add(server1);
+            serverList.add(server2);
+            commandObject.add("serverList", serverList);
+
+            System.out.println(commandObject.toString());
+            return commandObject.toString();
+        }
+
+        if (cmd.hasOption("fetch") && commandObject.get("command") == null) {
+            commandObject.addProperty("command", "FETCH");
+            JsonObject resourceTemplate = new JsonObject();
+            resourceGenerator(resourceTemplate);
+            commandObject.add("resourceTemplate", resourceTemplate);
+
+            return commandObject.toString();
+        }
+
+        return null;
+    }
+
+    /**
+     * The common method to generate the JsonObject resource
+     *
+     * @param resource the resource JsonObject
+     */
+    private void resourceGenerator(JsonObject resource) {
+        resource.addProperty("name", name);
+        resource.add("tags", tagsArray);
+        resource.addProperty("description", description);
+        resource.addProperty("uri", uri);
+        resource.addProperty("channel", channel);
+        resource.addProperty("owner", owner);
+        resource.addProperty("ezserver", ezserver);
     }
 
     /**
      * @param args the command line arguments
      */
-
     public static void serverCli(String[] args) {
 
         String advertisedHostname = "EZShaer Server";

@@ -1,6 +1,6 @@
 # Group Meeting #1
 
-##### 11:00am-11:58am, April 6th, 2017
+##### ERC Ground Floor, 11:00am-11:58am, April 6th, 2017
 
 ##### Attendance
 
