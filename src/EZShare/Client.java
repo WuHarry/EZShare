@@ -13,10 +13,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 public class Client {
 
@@ -25,35 +23,43 @@ public class Client {
     private static int port = 3000;
     //Mark whether next response from server has some file
     private static boolean hasResources = false;
+    //Logger
+    private static Logger logger = Logger.getLogger(
+            Thread.currentThread().getStackTrace()[0].getClassName());
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
+        //get the command json string
         Connection connection = new Connection();
         String commandJsonString = connection.clientCli(args);
 
-        System.out.println(commandJsonString);
         //update ip and port
         ip = connection.host;
         port = connection.port;
 
         //new client socket
-        try(Socket socket = new Socket(ip, port)){
+        try (Socket socket = new Socket(ip, port)) {
             //input stream
-            DataInputStream input = new DataInputStream(socket.getInputStream());
+            DataInputStream input =
+                    new DataInputStream(socket.getInputStream());
             //output stream
-            DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+            DataOutputStream output =
+                    new DataOutputStream(socket.getOutputStream());
 
-            if(commandJsonString != null){
+            if (commandJsonString != null) {
+                if (connection.debugSwitch) {
+                    logger.info("[SENT] - " + commandJsonString);
+                }
                 output.writeUTF(commandJsonString);
                 output.flush();
-            }else {
+            } else {
                 System.out.println("Command error");
             }
 
-            while(true){
-                if(input.available() > 0){
-                    if(hasResources){
-                        try{
+            while (true) {
+                if (input.available() > 0) {
+                    if (hasResources) {
+                        try {
                             FileOutputStream fileOutputStream = new
                                     FileOutputStream("1.jpg");
                             byte[] buffer = new byte[1024];
@@ -64,30 +70,36 @@ public class Client {
                             fileOutputStream.close();
                             hasResources = false;
                             System.out.println("Resource read successful.");
-                        }catch (IOException e){
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
                     } else {
                         String message = input.readUTF();
+                        //check if debug mode is on
+                        if (connection.debugSwitch) {
+                            logger.info("[RECEIVE] - " + message);
+                        }
                         System.out.println(message);
                         checkResources(message);
                     }
                 }
             }
 
-        }catch (IOException e){
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, e.getMessage());
+        } catch (IOException e) {
+            Logger.getLogger(Client.class.getName()).
+                    log(Level.SEVERE, e.getMessage());
         }
     }
 
     /**
      * The method to check if there is a resource need to be stored to file.
+     *
      * @param message the server returned message
      */
-    public static void checkResources (String message){
+    public static void checkResources(String message) {
         JsonParser parser = new JsonParser();
         JsonObject response = (JsonObject) parser.parse(message);
-        if(response.has("resourceSize")){
+        if (response.has("resourceSize")) {
             hasResources = true;
         }
     }
