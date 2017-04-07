@@ -22,10 +22,10 @@ public class Connection {
 
     //Debug Mode, true is on, false is off.
     public boolean debugSwitch = false;
-    public String host = "localhost";
+    public String host = "1.1.1.1";
     public int port = 3000;
 
-    String channel = "my_private_channel";
+    String channel = "";
     String description = "";
     String name = "";
     String owner = "";
@@ -33,7 +33,7 @@ public class Connection {
     String ezserver = null;
     String servers = "";
     String tags = "";
-    String uri = "file:\\/\\/\\/\\/home\\/aaron\\/EZShare\\/ezshare.jar";
+    String uri = "";
     JsonArray tagsArray = new JsonArray();
 
     /**
