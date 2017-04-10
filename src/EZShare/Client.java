@@ -25,10 +25,22 @@ public class Client {
     //Mark whether next response from server has some file
     private static boolean hasResources = false;
     //Logger
-    private static Logger logger = Logger.getLogger(
-            Thread.currentThread().getStackTrace()[0].getClassName());
+    private static final Logger logger = Logger.getLogger(
+            Client.class.getName());
 
     public static void main(String[] args) {
+
+        int resourceSize = 0;
+        //Load log config file
+        try{
+            FileInputStream config = new FileInputStream("logger.properties");
+            LogManager.getLogManager().readConfiguration(config);
+
+        } catch (IOException e) {
+            System.out.println("WARNING: Can not load log configuration file");
+            System.out.println("WARNING: Logging not configured");
+            e.printStackTrace();
+        }
 
         //get the command json string
         Connection connection = new Connection();
@@ -48,9 +60,9 @@ public class Client {
                     new DataOutputStream(socket.getOutputStream());
 
 
-            if (connection.debugSwitch) {
-                logger.info("[SENT] - " + commandJsonString);
-                System.out.println("Debug mode on");
+            if (Connection.debugSwitch) {
+                logger.info("Debug mode on");
+                logger.fine("[SENT] - " + commandJsonString);
             }
             if(commandJsonString != null){
                 output.writeUTF(commandJsonString);
@@ -64,31 +76,38 @@ public class Client {
                             FileOutputStream fileOutputStream = new
                                     FileOutputStream("1.jpg");
                             byte[] buffer = new byte[1024];
-                            int len = 0;
-                            while ((len = input.read(buffer)) != -1) {
-                                fileOutputStream.write(buffer, 0, len);
+                            int bytesLeft = resourceSize;
+                            while (bytesLeft > 0) {
+                                int read = input.read(buffer, 0, Math.min(bytesLeft, buffer.length));
+                                if (read == -1){
+                                    throw new EOFException("Unexpected end of data");
+                                }
+                                fileOutputStream.write(buffer, 0, read);
+                                bytesLeft -= read;
                             }
                             fileOutputStream.close();
                             hasResources = false;
-                            System.out.println("Resource read successful.");
+                            if(Connection.debugSwitch){
+                                logger.info("Resource read successfully.");
+                            }
+                            System.out.println("Resource read successfully.");
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     } else {
                         String message = input.readUTF();
                         //check if debug mode is on
-                        if (connection.debugSwitch) {
-                            logger.info("[RECEIVE] - " + message);
+                        if (Connection.debugSwitch) {
+                            logger.fine("[RECEIVE] - " + message);
                         }
                         System.out.println(message);
-                        checkResources(message);
+                        resourceSize = checkResources(message);
                     }
                 }
             }
 
         } catch (IOException e) {
-            Logger.getLogger(Client.class.getName()).
-                    log(Level.SEVERE, e.getMessage());
+            logger.warning("[ERROR] - Unexpected response");
         }
     }
 
@@ -97,13 +116,24 @@ public class Client {
      *
      * @param message the server returned message
      */
-    public static void checkResources(String message) {
-        if (isJSONValid(message)){
+    public static int checkResources(String message) {
+        if (isJSONValid(message)) {
             JsonParser parser = new JsonParser();
             JsonObject response = (JsonObject) parser.parse(message);
             if (response.has("resourceSize")) {
                 hasResources = true;
+                if (Connection.debugSwitch) {
+                    logger.info("{\"resourceSize\":" +
+                            response.get("resourceSize") + "}");
+                }
+                System.out.println("exact bytes of resource");
+                return response.get("resourceSize").getAsInt();
+            } else {
+                hasResources = false;
+                return 0;
             }
+        } else {
+            return 0;
         }
     }
 

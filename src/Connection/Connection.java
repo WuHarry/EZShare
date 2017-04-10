@@ -21,7 +21,7 @@ import org.apache.commons.cli.HelpFormatter;
 public class Connection {
 
     //Debug Mode, true is on, false is off.
-    public boolean debugSwitch = false;
+    public static boolean debugSwitch = false;
     public String host = "1.1.1.1";
     public int port = 3000;
 
@@ -222,7 +222,7 @@ public class Connection {
      */
     public static void serverCli(String[] args) {
 
-        String advertisedHostname = "EZShaer Server";
+        String advertisedHostname = "EZShare Server";
         String connectionIntervalLimit = "";
         int exchangeInterval = 600;
         int port = 0;
