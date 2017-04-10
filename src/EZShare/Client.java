@@ -9,6 +9,7 @@ package EZShare;
  */
 
 import Connection.Connection;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -46,14 +47,14 @@ public class Client {
             DataOutputStream output =
                     new DataOutputStream(socket.getOutputStream());
 
-            if (commandJsonString != null) {
-                if (connection.debugSwitch) {
-                    logger.info("[SENT] - " + commandJsonString);
-                }
+
+            if (connection.debugSwitch) {
+                logger.info("[SENT] - " + commandJsonString);
+                System.out.println("Debug mode on");
+            }
+            if(commandJsonString != null){
                 output.writeUTF(commandJsonString);
                 output.flush();
-            } else {
-                System.out.println("Command error");
             }
 
             while (true) {
@@ -97,10 +98,22 @@ public class Client {
      * @param message the server returned message
      */
     public static void checkResources(String message) {
-        JsonParser parser = new JsonParser();
-        JsonObject response = (JsonObject) parser.parse(message);
-        if (response.has("resourceSize")) {
-            hasResources = true;
+        if (isJSONValid(message)){
+            JsonParser parser = new JsonParser();
+            JsonObject response = (JsonObject) parser.parse(message);
+            if (response.has("resourceSize")) {
+                hasResources = true;
+            }
+        }
+    }
+
+    public static boolean isJSONValid(String jsonInString) {
+        Gson gson = new Gson();
+        try {
+            gson.fromJson(jsonInString, Object.class);
+            return true;
+        } catch(com.google.gson.JsonSyntaxException ex) {
+            return false;
         }
     }
 }
