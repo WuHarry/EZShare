@@ -24,14 +24,16 @@ public class Client {
     private static int port = 3000;
     //Mark whether next response from server has some file
     private static boolean hasResources = false;
+    //Record the resource size if the resource is a file
+    private static int resourceSize = 0;
+    //Mark the end of the connection
+    private static boolean theEnd = false;
     //Logger
     private static final Logger logger = Logger.getLogger(
             Client.class.getName());
 
     public static void main(String[] args) {
 
-        //Record the resource size if the resource is a file
-        int resourceSize = 0;
         //Load log config file
         try {
             FileInputStream config = new FileInputStream("logger.properties");
@@ -71,7 +73,7 @@ public class Client {
             while (true) {
                 if (input.available() > 0) {
                     if (hasResources) {
-                        downloadResources(input,resourceSize);
+                        downloadResources(input);
                     } else {
                         String message = input.readUTF();
                         //check if debug mode is on
@@ -79,22 +81,25 @@ public class Client {
                             logger.fine("[RECEIVE] - " + message);
                         }
                         System.out.println(message);
-                        resourceSize = checkResources(message);
+                        checkResources(message);
+                        //check whether it is time to close connection
+                        if(theEnd) break;
                     }
                 }
             }
+            socket.close();
         } catch (IOException e) {
-            logger.warning("[ERROR] - Unexpected response");
+            logger.warning("[ERROR] - Can not establish connection.");
         }
     }
 
     /**
      * The method to check if there is a resource need to be stored to file.
+     * Also check whether it is the end of the connection.
      *
      * @param message the server returned message
-     * @return the resource size if there is a resource file otherwise return 0
      */
-    private static int checkResources(String message) {
+    private static void checkResources(String message) {
         if (isJSONValid(message)) {
             JsonParser parser = new JsonParser();
             JsonObject response = (JsonObject) parser.parse(message);
@@ -105,20 +110,18 @@ public class Client {
                             response.get("resourceSize") + "}");
                 }
                 System.out.println("exact bytes of resource");
-                return response.get("resourceSize").getAsInt();
-            } else {
-                hasResources = false;
-                return 0;
+                resourceSize = response.get("resourceSize").getAsInt();
+            } else if (response.has("resultSize")){
+                theEnd = true;
             }
-        } else {
-            return 0;
         }
     }
 
     /**
      * The method to check whether a string is a valid json string
      *
-     * @param jsonInString
+     * @param jsonInString the string needed to be checked whether it is a
+     *                     json string.
      * @return true for the string is a json string
      */
     private static boolean isJSONValid(String jsonInString) {
@@ -133,10 +136,10 @@ public class Client {
 
     /**
      * The method to download the resources
+     *
      * @param input the DataInputStream
-     * @param resourceSize the size of the resource which need to be download
      */
-    private static void downloadResources(DataInputStream input,int resourceSize){
+    private static void downloadResources(DataInputStream input) {
         try {
             hasResources = false;
             FileOutputStream fileOutputStream = new
@@ -156,6 +159,7 @@ public class Client {
                 logger.info("Resource read successfully.");
             }
             System.out.println("Resource read successfully.");
+            resourceSize = 0;
         } catch (IOException e) {
             logger.warning("[ERROR] - Resources download failed!");
             e.printStackTrace();
