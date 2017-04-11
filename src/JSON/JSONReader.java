@@ -176,4 +176,21 @@ public class JSONReader {
         }
         return serverList;
     }
+
+    /**
+     * The method to check whether a string is a valid json string
+     *
+     * @param jsonInString the string needed to be checked whether it is a
+     *                     json string.
+     * @return true for the string is a json string
+     */
+    public static boolean isJSONValid(String jsonInString) {
+        Gson gson = new Gson();
+        try {
+            gson.fromJson(jsonInString, Object.class);
+            return true;
+        } catch (com.google.gson.JsonSyntaxException ex) {
+            return false;
+        }
+    }
 }

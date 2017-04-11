@@ -9,6 +9,7 @@ package EZShare;
  */
 
 import Connection.Connection;
+import JSON.JSONReader;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -34,17 +35,8 @@ public class Client {
 
     public static void main(String[] args) {
 
-        //Load log config file
-        try {
-            FileInputStream config = new FileInputStream("logger.properties");
-            LogManager.getLogManager().readConfiguration(config);
-
-        } catch (IOException e) {
-            System.out.println("WARNING: Can not load log configuration file");
-            System.out.println("WARNING: Logging not configured");
-            e.printStackTrace();
-        }
-
+        //load log configuration
+        LogConfig.logConfig();
         //get the command json string
         Connection connection = new Connection();
         String commandJsonString = connection.clientCli(args);
@@ -100,7 +92,7 @@ public class Client {
      * @param message the server returned message
      */
     private static void checkResources(String message) {
-        if (isJSONValid(message)) {
+        if (JSONReader.isJSONValid(message)) {
             JsonParser parser = new JsonParser();
             JsonObject response = (JsonObject) parser.parse(message);
             if (response.has("resourceSize")) {
@@ -114,23 +106,6 @@ public class Client {
             } else if (response.has("resultSize")){
                 theEnd = true;
             }
-        }
-    }
-
-    /**
-     * The method to check whether a string is a valid json string
-     *
-     * @param jsonInString the string needed to be checked whether it is a
-     *                     json string.
-     * @return true for the string is a json string
-     */
-    private static boolean isJSONValid(String jsonInString) {
-        Gson gson = new Gson();
-        try {
-            gson.fromJson(jsonInString, Object.class);
-            return true;
-        } catch (com.google.gson.JsonSyntaxException ex) {
-            return false;
         }
     }
 

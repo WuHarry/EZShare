@@ -1,41 +1,47 @@
 package EZShare;
 
-import JSON.JSONReader;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
+/**
+ * Created by Yahang Wu on 2017/3/31.
+ * COMP90015 Distributed System Project1 EZServer
+ * The server main function
+ * include establish the connection with the client
+ * and receive the command from the client
+ */
 
 import javax.net.ServerSocketFactory;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Created by harry on 2017/3/31.
- */
-
 public class Server {
 
     private static int port = 4000;
     private static int counter = 0;
+    private static Logger logger = Logger.getLogger(
+            Server.class.getName());
 
+    /**
+     * The main function of the server
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
+
+        //load log configuration
+        LogConfig.logConfig();
 
         ServerSocketFactory factory = ServerSocketFactory.getDefault();
         try (ServerSocket server = factory.createServerSocket(port)) {
-            System.out.println("waiting for connection ......");
+            logger.info("Starting the EZShare Server");
+            logger.fine("Waiting for connection");
 
             while (true) {
                 Socket client = server.accept();
                 counter++;
 
                 // Start a new thread for a connection
-                Thread t = new Thread(() -> serverClient(client));
+                Thread t = new Thread(() -> ServerControl.serverClient(client));
                 t.start();
             }
 
@@ -44,25 +50,5 @@ public class Server {
         }
     }
 
-    private static void serverClient(Socket client) {
-        try (Socket clientSocket = client) {
-            //input stream
-            DataInputStream input = new DataInputStream(clientSocket.getInputStream());
-            //output stream
-            DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
-
-            String jsonString = input.readUTF();
-            System.out.println("ClientServer: " + jsonString);
-
-            JsonParser parser =  new JsonParser();
-            JsonObject json = (JsonObject) parser.parse(jsonString);
-
-            output.writeUTF("Hi, client " + counter + "!");
-            output.flush();
-
-        } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, ex.getMessage());
-        }
-    }
 
 }
