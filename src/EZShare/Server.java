@@ -1,6 +1,3 @@
-/**
- * Testing git
- */
 package EZShare;
 
 /**

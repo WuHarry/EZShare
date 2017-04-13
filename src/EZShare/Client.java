@@ -16,6 +16,7 @@ import com.google.gson.JsonParser;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.logging.*;
 
 public class Client {
@@ -26,7 +27,8 @@ public class Client {
     //Mark whether next response from server has some file
     private static boolean hasResources = false;
     //Record the resource size if the resource is a file
-    private static int resourceSize = 0;
+    private static long resourceSize = 0;
+    private static String resourceName = "";
     //Mark the end of the connection
     private static boolean theEnd = false;
     //Logger
@@ -75,7 +77,7 @@ public class Client {
                         System.out.println(message);
                         checkResources(message);
                         //check whether it is time to close connection
-                        if(theEnd) break;
+                        if (theEnd) break;
                     }
                 }
             }
@@ -102,8 +104,10 @@ public class Client {
                             response.get("resourceSize") + "}");
                 }
                 System.out.println("exact bytes of resource");
-                resourceSize = response.get("resourceSize").getAsInt();
-            } else if (response.has("resultSize")){
+                resourceSize = response.get("resourceSize").getAsLong();
+                String[] uri = response.get("uri").getAsString().split("/");
+                resourceName = uri[uri.length - 1];
+            } else if (response.has("resultSize")) {
                 theEnd = true;
             }
         }
@@ -117,19 +121,27 @@ public class Client {
     private static void downloadResources(DataInputStream input) {
         try {
             hasResources = false;
-            FileOutputStream fileOutputStream = new
-                    FileOutputStream("1.jpg");
-            byte[] buffer = new byte[1024];
-            int bytesLeft = resourceSize;
-            while (bytesLeft > 0) {
-                int read = input.read(buffer, 0, Math.min(bytesLeft, buffer.length));
-                if (read == -1) {
-                    throw new EOFException("Unexpected end of data");
+            String fileName = "src\\client_file\\" + resourceName;
+            RandomAccessFile downloadingFile =
+                    new RandomAccessFile(fileName, "rw");
+            long fileSizeRemaining = resourceSize;
+            int chunkSize = setChunkSize(fileSizeRemaining);
+            byte[] receiveBuffer = new byte[chunkSize];
+            System.out.println("file " + fileName + "is of size " + fileSizeRemaining);
+            int num;
+            while ((num = input.read(receiveBuffer)) > 0) {
+                //write received bytes into the RandomAccessFile
+                downloadingFile.write(Arrays.copyOf(receiveBuffer, num));
+                //Reduce the fileSizeRemaining
+                fileSizeRemaining -= num;
+                chunkSize = setChunkSize(fileSizeRemaining);
+                //update buffer
+                receiveBuffer = new byte[chunkSize];
+                //when file size is zero, break
+                if (fileSizeRemaining == 0) {
+                    break;
                 }
-                fileOutputStream.write(buffer, 0, read);
-                bytesLeft -= read;
             }
-            fileOutputStream.close();
             if (Connection.debugSwitch) {
                 logger.info("Resource read successfully.");
             }
@@ -139,5 +151,13 @@ public class Client {
             logger.warning("[ERROR] - Resources download failed!");
             e.printStackTrace();
         }
+    }
+
+    /**
+     * @param chunkSize the chunk size you want to set to
+     * @return the int form chunk size
+     */
+    public static int setChunkSize(long chunkSize) {
+        return (int) chunkSize;
     }
 }

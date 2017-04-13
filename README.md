@@ -1,7 +1,10 @@
 # EZShare
-COMP90015 SM1 2017 Project 1 - EZShare Resource Sharing Network
+#### COMP90015 SM1 2017 Project 1 - EZShare Resource Sharing Network
 
-Team Members:
-Harry, IDE Test
-Timmy, Testing own repository
-Yancc
+##### Team Members:
+
+* Yahang Wu(Harry)  
+* Muhammad Taimoor(Timmy)
+* Danni Zhao
+* Ryan Naughton
+
