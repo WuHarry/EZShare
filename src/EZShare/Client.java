@@ -127,7 +127,7 @@ public class Client {
             long fileSizeRemaining = resourceSize;
             int chunkSize = setChunkSize(fileSizeRemaining);
             byte[] receiveBuffer = new byte[chunkSize];
-            System.out.println("file " + fileName + "is of size " + fileSizeRemaining);
+            System.out.println("file " + resourceName + " is of size " + fileSizeRemaining);
             int num;
             while ((num = input.read(receiveBuffer)) > 0) {
                 //write received bytes into the RandomAccessFile

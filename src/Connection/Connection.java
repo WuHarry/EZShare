@@ -18,23 +18,26 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 
+import java.util.logging.Logger;
+
 public class Connection {
 
+    private static final Logger logger =
+            Logger.getLogger(Connection.class.getName());
     //Debug Mode, true is on, false is off.
     public static boolean debugSwitch = false;
     public String host = "1.1.1.1";
     public int port = 3000;
 
-    String channel = "";
-    String description = "";
-    String name = "";
-    String owner = "";
-    String secret = "";
-    String ezserver = null;
-    String servers = "";
-    String tags = "";
-    String uri = "";
-    JsonArray tagsArray = new JsonArray();
+    private String channel = "";
+    private String description = "";
+    private String name = "";
+    private String owner = "";
+    private String secret = "";
+    private String ezserver = null;
+    private String servers = "";
+    private String uri = "";
+    private JsonArray tagsArray = new JsonArray();
 
     /**
      * @param args the command line arguments
@@ -76,7 +79,8 @@ public class Connection {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
             //help(options);
-            System.out.println("I am here.");
+            logger.warning("Wrong command line input;");
+            System.out.println("Wrong command line input;");
         }
 
         assert cmd != null;
@@ -110,7 +114,7 @@ public class Connection {
         }
 
         if (cmd.hasOption("tags")) {
-            tags = cmd.getOptionValue("tags");
+            String tags = cmd.getOptionValue("tags");
             String[] array = tags.split(",");
             for (String str : array) {
                 tagsArray.add(str);
