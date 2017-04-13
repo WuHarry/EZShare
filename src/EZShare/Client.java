@@ -120,6 +120,7 @@ public class Client {
      */
     private static void downloadResources(DataInputStream input) {
         try {
+            //reset trigger
             hasResources = false;
             String fileName = "src\\client_file\\" + resourceName;
             RandomAccessFile downloadingFile =
@@ -146,7 +147,9 @@ public class Client {
                 logger.info("Resource read successfully.");
             }
             System.out.println("Resource read successfully.");
+            //reset resource size and name
             resourceSize = 0;
+            resourceName = "";
         } catch (IOException e) {
             logger.warning("[ERROR] - Resources download failed!");
             e.printStackTrace();
@@ -157,7 +160,7 @@ public class Client {
      * @param chunkSize the chunk size you want to set to
      * @return the int form chunk size
      */
-    public static int setChunkSize(long chunkSize) {
+    private static int setChunkSize(long chunkSize) {
         return (int) chunkSize;
     }
 }
