@@ -8,13 +8,6 @@ import java.util.List;
  * Resource Class
  */
 public class Resource {
-    /*String name = "";
-    String description = "";
-    String[] tags;
-    String uri;
-    String channel = "";
-    String owner = "";
-    String ezserver = "EZShare";*/
 	
 	private String name;
 	private String description;

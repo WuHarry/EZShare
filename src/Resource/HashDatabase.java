@@ -9,9 +9,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * A synchronized database which allows lookup of resources based on their template,
- * by multiple threads simultaneously. Will overwrite equal resource, but does not guarantee
- * automatic clearing of previous resource if equal resources have differing fields (user's
- * responsibility).
+ * by multiple threads simultaneously. 
+ * 
+ * Created by Ryan Naughton 15/04/2017
  *
  */
 public class HashDatabase<synchronised> {
@@ -23,6 +23,9 @@ public class HashDatabase<synchronised> {
 	private Map<String, List<Resource>> channelMap;
 	private Map<String, List<Resource>> ownerMap;
 	
+	/**
+	 * Create new HashDatabase with no Resources stored.
+	 */
 	public HashDatabase(){
 		lock = new ReentrantReadWriteLock();
 		this.uriMap = new HashMap<String, Resource>();
@@ -32,6 +35,11 @@ public class HashDatabase<synchronised> {
 		this.ownerMap = new HashMap<String, List<Resource>>();
 	}
 	
+	/**
+	 * Returns true if the database contains a file associated with the given uri.
+	 * @param uri uri to lookup.
+	 * @return True if a resource is associated with the given uri, otherwise false.
+	 */
 	public boolean containsURI(String uri){
 		lock.readLock().lock();
 		try{
@@ -62,6 +70,10 @@ public class HashDatabase<synchronised> {
 		}
 	}
 	
+	/**
+	 * @param name The name of the resource to search for.
+	 * @return List of resources under the given name, or null if no resources have this name.
+	 */
 	public List<Resource> nameLookup(String name){
 		if(name == null){
 			//Just crashes at the moment
@@ -78,6 +90,10 @@ public class HashDatabase<synchronised> {
 		}
 	}
 	
+	/**
+	 * @param desc The description of the resource to search for.
+	 * @return List of resources with the given description, or null if none are found.
+	 */
 	public List<Resource> descLookup(String desc){
 		if(desc == null){
 			//Just crashes at the moment
@@ -94,6 +110,10 @@ public class HashDatabase<synchronised> {
 		}
 	}
 	
+	/**
+	 * @param channel The channel of the resource to search for.
+	 * @return List of resources in the given channel, or null if none exist.
+	 */
 	public List<Resource> channelLookup(String channel){
 		if(channel == null){
 			//Just crashes at the moment
@@ -110,6 +130,10 @@ public class HashDatabase<synchronised> {
 		}
 	}
 	
+	/**
+	 * @param owner The owner of the resource to search for.
+	 * @return List of resources with given owner, or null if none exist.
+	 */
 	public List<Resource> ownerLookup(String owner){
 		if(owner == null){
 			//Just crashes at the moment
@@ -126,6 +150,12 @@ public class HashDatabase<synchronised> {
 		}
 	}
 	
+	/**
+	 * Inserts the given resource into the database, updating maps appropriately.
+	 * Will overwrite equal resource, but does not guarantee automatic clearing of previous 
+	 * resource if equal resources have differing fields (user's responsibility).
+	 * @param res The resource to be inserted.
+	 */
 	public void insertResource(Resource res){
 		//NOTE: If resource with identical uri to prev but different other fields 
 		//is inserted, will overwrite uri references but not others necessarily.
@@ -184,6 +214,10 @@ public class HashDatabase<synchronised> {
 		}
 	}
 	
+	/**
+	 * Deletes all references to the given resource from the database.
+	 * @param res The resource to be deleted from the database.
+	 */
 	public void deleteResource(Resource res){
 		if(res == null){
 			//Just crashes at the moment
