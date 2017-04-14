@@ -1,11 +1,13 @@
 package EZShare;
 
 import JSON.JSONReader;
+import Resource.HashDatabase;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,6 +27,8 @@ class ServerControl {
 	private static final String FETCH = "FETCH";
 	private static final String EXCHANGE = "EXCHANGE";
 	
+	private static final HashDatabase db = new HashDatabase();
+	
     private static Logger logger = Logger.getLogger(
             ServerControl.class.getName());
 
@@ -36,6 +40,8 @@ class ServerControl {
         try (Socket clientSocket = client) {
         	JSONReader curr;
             String command;
+            String name, description, channel, owner, uri, ezServer;
+            String[] tags;
         	//input stream
             DataInputStream input =
                     new DataInputStream(clientSocket.getInputStream());
@@ -52,9 +58,23 @@ class ServerControl {
                 	command = curr.getCommand();
                 	if(command == PUBLISH){
                 		//publish
-                		
+                		checkNull(name = curr.getResourceName());
+                		checkNull(description = curr.getResourceDescription());
+                		checkNull(channel = curr.getResourceChannel());
+                		checkNull(owner = curr.getResourceOwner());
+                		checkNull(uri = curr.getResourceUri());
+                		checkNull(tags = curr.getResourceTags());
+                		checkNull(ezServer = curr.getResourceEZserver());
+                		publish(name, tags, description, uri, channel, owner, ezServer, db);
                 	}else if(command == REMOVE){
-                		//remove
+                		checkNull(name = curr.getResourceName());
+                		checkNull(description = curr.getResourceDescription());
+                		checkNull(channel = curr.getResourceChannel());
+                		checkNull(owner = curr.getResourceOwner());
+                		checkNull(uri = curr.getResourceUri());
+                		checkNull(tags = curr.getResourceTags());
+                		checkNull(ezServer = curr.getResourceEZserver());
+                		remove(name, tags, description, uri, channel, owner, ezServer, db);
                 	}else if(command == SHARE){
                 		//share
                 	}else if(command == QUERY){
@@ -84,5 +104,27 @@ class ServerControl {
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
+    }
+    
+    private static void publish(String rName, String[] rTags, String rDesc, String rUri, 
+    		                    String rChannel, String rOwner, String ezServer, HashDatabase db){
+    	//Check strings etc. are valid
+    	
+    	//Make sure matching primary key resources are removed.
+    	
+    	//Add resource to database.
+    }
+    
+    private static void remove(String rName, String[] rTags, String rDesc, String rUri, 
+            String rChannel, String rOwner, String ezServer, HashDatabase db){
+    	//Check strings etc. are valid
+    	
+    	//Remove resource from database.
+}
+    
+    private static void checkNull(Object value){
+    	if(value == null){
+    		//do something about error
+    	}
     }
 }

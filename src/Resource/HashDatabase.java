@@ -15,7 +15,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Created by Ryan Naughton 15/04/2017
  *
  */
-public class HashDatabase<synchronised> {
+public class HashDatabase {
 
 	private ReadWriteLock lock;
 	private Map<String, ChannelDB> db;	//Maps channel to map of uri to resource.
@@ -216,7 +216,7 @@ public class HashDatabase<synchronised> {
 			if(channelDB.uriMap.containsKey(res.getUri())){
 				//Make sure same owner, otherwise not allowed.
 				if(!res.getOwner().equals(channelDB.uriMap.get(res.getUri()))){
-					//Handle illegal attemp at insert.
+					//Handle illegal attempt at insert.
 					throw new IllegalStateException("Cannot insert resources with same uris but different owners to a channel.");
 				}
 			}
