@@ -1,6 +1,7 @@
 package Resource;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,94 +18,133 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class HashDatabase<synchronised> {
 
 	private ReadWriteLock lock;
-	private Map<String, Resource> uriMap;
-	private Map<String, List<Resource>> nameMap;
-	private Map<String, List<Resource>> descMap;
-	private Map<String, List<Resource>> channelMap;
-	private Map<String, List<Resource>> ownerMap;
+	private Map<String, ChannelDB> db;	//Maps channel to map of uri to resource.
+	
+	/**
+	 * Internal class to separate resources by channel and allow
+	 * lookup within a channel by all fields.
+	 *
+	 */
+	private class ChannelDB{
+		private Map<String, Resource> uriMap;
+		private Map<String, List<Resource>> nameMap;
+		private Map<String, List<Resource>> descMap;
+		private Map<String, List<Resource>> ownerMap;
+		
+		public ChannelDB(){
+			this.uriMap = new HashMap<String, Resource>();
+			this.nameMap = new HashMap<String, List<Resource>>();
+			this.descMap = new HashMap<String, List<Resource>>();
+			this.ownerMap = new HashMap<String, List<Resource>>();
+		}
+		
+	}
 	
 	/**
 	 * Create new HashDatabase with no Resources stored.
 	 */
 	public HashDatabase(){
 		lock = new ReentrantReadWriteLock();
-		this.uriMap = new HashMap<String, Resource>();
-		this.nameMap = new HashMap<String, List<Resource>>();
-		this.descMap = new HashMap<String, List<Resource>>();
-		this.channelMap = new HashMap<String, List<Resource>>();
-		this.ownerMap = new HashMap<String, List<Resource>>();
+		this.db = new HashMap<String, ChannelDB>();
 	}
 	
 	/**
-	 * Returns true if the database contains a file associated with the given uri.
-	 * @param uri uri to lookup.
-	 * @return True if a resource is associated with the given uri, otherwise false.
+	 * Looks up a resource by its primary key, returns that resource if it is present or null
+	 * otherwise.
+	 * @param channel The channel of the resource to search for.
+	 * @param uri The uri of the resource.
+	 * @return Resource which matches the key or null if none found.
 	 */
-	public boolean containsURI(String uri){
+	public Resource pKeyLookup(String channel, String uri){
+		if(channel == null || uri == null){
+			throw new IllegalArgumentException("Cannot lookup primary key in database with null elements.");
+		}
 		lock.readLock().lock();
 		try{
-			return this.uriMap.containsKey(uri);
+			ChannelDB channelDB;
+			if(this.db.containsKey(channel)){
+				channelDB = this.db.get(channel);
+				if(channelDB.uriMap.containsKey(uri)){
+					return channelDB.uriMap.get(uri);
+				}
+			}
+			return null;
 		}finally{
 			lock.readLock().unlock();
 		}
 	}
 	
 	/**
-	 * Returns resource matching uri or null if no resource matches the uri.
+	 * Returns list of resources matching uri or null if no resource matches the uri.
+	 * @param channel Channel to search in. 
 	 * @param uri uri used for lookup.
 	 * @return Resource found or null if no match.
 	 */
-	public Resource uriLookup(String uri){
-		if(uri == null){
-			//Handle null uri, currently just crashes
+	public Resource uriLookup(String channel, String uri){
+		if(uri == null || channel == null){
 			throw new IllegalArgumentException("Cannot lookup resource by uri when uri is null.");
 		}
+		ChannelDB channelDB;
 		lock.readLock().lock();
 		try{
-			if(!this.uriMap.containsKey(uri)){
+			if(!this.db.containsKey(channel)){
 				return null;
 			}
-			return uriMap.get(uri);
+			channelDB = this.db.get(channel);
+			if(!channelDB.uriMap.containsKey(uri)){
+				return null;
+			}
+			return channelDB.uriMap.get(uri);
 		}finally{
 			lock.readLock().unlock();
 		}
 	}
 	
 	/**
+	 * @param channel Channel to search in.
 	 * @param name The name of the resource to search for.
-	 * @return List of resources under the given name, or null if no resources have this name.
+	 * @return Collection of resources under the given name, or null if no resources have this name.
 	 */
-	public List<Resource> nameLookup(String name){
-		if(name == null){
-			//Just crashes at the moment
+	public Collection<Resource> nameLookup(String channel, String name){
+		if(name == null || channel == null){
 			throw new IllegalArgumentException("Cannot lookup resource by name when name is null.");
 		}
+		ChannelDB channelDB;
 		lock.readLock().lock();
 		try{
-			if(!this.nameMap.containsKey(name)){
+			if(!this.db.containsKey(channel)){
 				return null;
 			}
-			return nameMap.get(name);
+			channelDB = this.db.get(channel);
+			if(!channelDB.nameMap.containsKey(name) || channelDB.nameMap.get(name).isEmpty()){
+				return null;
+			}
+			return channelDB.nameMap.get(name);
 		}finally{
 			lock.readLock().unlock();
 		}
 	}
 	
 	/**
+	 * @param channel Channel to search in.
 	 * @param desc The description of the resource to search for.
 	 * @return List of resources with the given description, or null if none are found.
 	 */
-	public List<Resource> descLookup(String desc){
-		if(desc == null){
-			//Just crashes at the moment
+	public Collection<Resource> descLookup(String channel, String desc){
+		if(desc == null || channel == null){
 			throw new IllegalArgumentException("Cannot lookup resource by description when description is null.");
 		}
+		ChannelDB channelDB;
 		lock.readLock().lock();
 		try{
-			if(!this.descMap.containsKey(desc)){
+			if(!this.db.containsKey(channel)){
 				return null;
 			}
-			return descMap.get(desc);
+			channelDB = this.db.get(channel);
+			if(!channelDB.descMap.containsKey(desc) || channelDB.descMap.get(desc).isEmpty()){
+				return null;
+			}
+			return channelDB.descMap.get(desc);
 		}finally{
 			lock.readLock().unlock();
 		}
@@ -114,37 +154,41 @@ public class HashDatabase<synchronised> {
 	 * @param channel The channel of the resource to search for.
 	 * @return List of resources in the given channel, or null if none exist.
 	 */
-	public List<Resource> channelLookup(String channel){
+	public Collection<Resource> channelLookup(String channel){
 		if(channel == null){
-			//Just crashes at the moment
 			throw new IllegalArgumentException("Cannot lookup resource by channel when channel is null.");
 		}
 		lock.readLock().lock();
 		try{
-			if(!this.channelMap.containsKey(channel)){
+			if(!this.db.containsKey(channel) || this.db.get(channel).uriMap.isEmpty()){
 				return null;
 			}
-			return channelMap.get(channel);
+			return this.db.get(channel).uriMap.values();
 		}finally{
 			lock.readLock().unlock();
 		}
 	}
 	
 	/**
+	 * @param channel Channel to search in.
 	 * @param owner The owner of the resource to search for.
 	 * @return List of resources with given owner, or null if none exist.
 	 */
-	public List<Resource> ownerLookup(String owner){
+	public Collection<Resource> ownerLookup(String channel, String owner){
 		if(owner == null){
-			//Just crashes at the moment
 			throw new IllegalArgumentException("Cannot lookup resource by owner when owner is null.");
 		}
+		ChannelDB channelDB;
 		lock.readLock().lock();
 		try{
-			if(!this.ownerMap.containsKey(owner)){
+			if(!this.db.containsKey(channel)){
 				return null;
 			}
-			return ownerMap.get(owner);
+			channelDB = this.db.get(channel);
+			if(!channelDB.ownerMap.containsKey(owner) || channelDB.ownerMap.get(owner).isEmpty()){
+				return null;
+			}
+			return channelDB.ownerMap.get(owner);
 		}finally{
 			lock.readLock().unlock();
 		}
@@ -157,56 +201,54 @@ public class HashDatabase<synchronised> {
 	 * @param res The resource to be inserted.
 	 */
 	public void insertResource(Resource res){
-		//NOTE: If resource with identical uri to prev but different other fields 
-		//is inserted, will overwrite uri references but not others necessarily.
-		//Use containsURI and delete to ensure correctness.
+		//NOTE: Use containsURI and delete to ensure correctness.
 		if(res == null){
-			//Just crashes at the moment
 			throw new IllegalArgumentException("Cannot insert null resource into HashDatabase.");
 		}
 		List<Resource> temp;
 		lock.writeLock().lock();
 		try{
+			if(!this.db.containsKey(res.getChannel())){
+				this.db.put(res.getChannel(), new ChannelDB());
+			}
+			ChannelDB channelDB = this.db.get(res.getChannel());
 			//insert into all maps.
-			this.uriMap.put(res.getUri(), res);
-			if(this.channelMap.containsKey(res.getChannel())){
-				temp = this.channelMap.get(res.getChannel());
+			if(channelDB.uriMap.containsKey(res.getUri())){
+				//Make sure same owner, otherwise not allowed.
+				if(!res.getOwner().equals(channelDB.uriMap.get(res.getUri()))){
+					//Handle illegal attemp at insert.
+					throw new IllegalStateException("Cannot insert resources with same uris but different owners to a channel.");
+				}
+			}
+			channelDB.uriMap.put(res.getUri(), res);
+			if(channelDB.ownerMap.containsKey(res.getOwner())){
+				temp = channelDB.ownerMap.get(res.getOwner());
 				if(temp.contains(res)){
 					temp.remove(res);
 				}
 				temp.add(res);
 			}else{
-				this.channelMap.put(res.getChannel(), temp = new ArrayList<Resource>());
+				channelDB.ownerMap.put(res.getOwner(), temp = new ArrayList<Resource>());
 				temp.add(res);
 			}
-			if(this.ownerMap.containsKey(res.getOwner())){
-				temp = this.ownerMap.get(res.getOwner());
+			if(channelDB.nameMap.containsKey(res.getName())){
+				temp = channelDB.nameMap.get(res.getName());
 				if(temp.contains(res)){
 					temp.remove(res);
 				}
 				temp.add(res);
 			}else{
-				this.ownerMap.put(res.getOwner(), temp = new ArrayList<Resource>());
+				channelDB.nameMap.put(res.getName(), temp = new ArrayList<Resource>());
 				temp.add(res);
 			}
-			if(this.nameMap.containsKey(res.getName())){
-				temp = this.nameMap.get(res.getName());
+			if(channelDB.descMap.containsKey(res.getDescription())){
+				temp = channelDB.descMap.get(res.getDescription());
 				if(temp.contains(res)){
 					temp.remove(res);
 				}
 				temp.add(res);
 			}else{
-				this.nameMap.put(res.getName(), temp = new ArrayList<Resource>());
-				temp.add(res);
-			}
-			if(this.descMap.containsKey(res.getDescription())){
-				temp = this.descMap.get(res.getDescription());
-				if(temp.contains(res)){
-					temp.remove(res);
-				}
-				temp.add(res);
-			}else{
-				this.descMap.put(res.getDescription(), temp = new ArrayList<Resource>());
+				channelDB.descMap.put(res.getDescription(), temp = new ArrayList<Resource>());
 				temp.add(res);
 			}
 		}finally{
@@ -220,25 +262,25 @@ public class HashDatabase<synchronised> {
 	 */
 	public void deleteResource(Resource res){
 		if(res == null){
-			//Just crashes at the moment
 			throw new IllegalArgumentException("Cannot delete null resource from HashDatabase.");
 		}
+		ChannelDB channelDB;
 		lock.writeLock().lock();
 		try{
 			//delete from all maps.
-			if(this.channelMap.containsKey(res.getChannel())){
-				this.channelMap.get(res.getChannel()).remove(res);
+			if(this.db.containsKey(res.getChannel())){
+				channelDB = this.db.get(res.getChannel());
+				if(channelDB.descMap.containsKey(res.getDescription())){
+					channelDB.descMap.get(res.getDescription()).remove(res);
+				}
+				if(channelDB.nameMap.containsKey(res.getName())){
+					channelDB.nameMap.get(res.getName()).remove(res);
+				}
+				if(channelDB.ownerMap.containsKey(res.getOwner())){
+					channelDB.ownerMap.get(res.getOwner()).remove(res);
+				}
+				channelDB.uriMap.remove(res.getUri());
 			}
-			if(this.descMap.containsKey(res.getDescription())){
-				this.descMap.get(res.getDescription()).remove(res);
-			}
-			if(this.nameMap.containsKey(res.getName())){
-				this.nameMap.get(res.getName()).remove(res);
-			}
-			if(this.ownerMap.containsKey(res.getOwner())){
-				this.ownerMap.get(res.getOwner()).remove(res);
-			}
-			this.uriMap.remove(res.getUri());
 		}finally{
 			lock.writeLock().unlock();
 		}
