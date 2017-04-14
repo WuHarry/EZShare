@@ -18,6 +18,13 @@ import java.util.logging.Logger;
  */
 class ServerControl {
 
+	private static final String PUBLISH = "PUBLISH";
+	private static final String REMOVE = "REMOVE";
+	private static final String SHARE = "SHARE";
+	private static final String QUERY = "QUERY";
+	private static final String FETCH = "FETCH";
+	private static final String EXCHANGE = "EXCHANGE";
+	
     private static Logger logger = Logger.getLogger(
             ServerControl.class.getName());
 
@@ -27,7 +34,9 @@ class ServerControl {
      */
     static void serverClient(Socket client) {
         try (Socket clientSocket = client) {
-            //input stream
+        	JSONReader curr;
+            String command;
+        	//input stream
             DataInputStream input =
                     new DataInputStream(clientSocket.getInputStream());
             //output stream
@@ -38,7 +47,26 @@ class ServerControl {
             if(input.available() != 0){
                 jsonString = input.readUTF();
                 if (JSONReader.isJSONValid(jsonString)){
-                    logger.fine("[RECEIVE] - " + jsonString);
+                    //Read command from json.
+                	curr = new JSONReader(jsonString);
+                	command = curr.getCommand();
+                	if(command == PUBLISH){
+                		//publish
+                		
+                	}else if(command == REMOVE){
+                		//remove
+                	}else if(command == SHARE){
+                		//share
+                	}else if(command == QUERY){
+                		//query
+                	}else if(command == FETCH){
+                		//fetch
+                	}else if(command == EXCHANGE){
+                		//exchange
+                	}else{
+                		//invalid command
+                	}
+                	logger.fine("[RECEIVE] - " + jsonString);
                     logger.fine("[SENT] - " + "{\"response\":\"success\"}");
                     output.writeUTF("{\"response\":\"success\"}");
                     output.flush();
