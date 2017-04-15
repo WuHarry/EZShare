@@ -2,7 +2,9 @@ package EZShare;
 
 import javax.net.ServerSocketFactory;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.Socket;
+import java.security.SecureRandom;
 import java.net.ServerSocket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,6 +33,11 @@ public class Server {
         //load log configuration
         LogConfig.logConfig();
 
+        //Generate long, random string for server to use as secret.
+        //Might be a bit too long at moment.
+        SecureRandom random = new SecureRandom();
+        String secret = new BigInteger(130, random).toString(32);
+        
         ServerSocketFactory factory = ServerSocketFactory.getDefault();
         try (ServerSocket server = factory.createServerSocket(port)) {
             logger.info("Starting the EZShare Server");
@@ -41,7 +48,7 @@ public class Server {
                 counter++;
 
                 // Start a new thread for a connection
-                Thread t = new Thread(() -> ServerControl.serverClient(client));
+                Thread t = new Thread(() -> ServerControl.serverClient(client, secret));
                 t.start();
             }
 

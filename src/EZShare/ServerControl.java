@@ -2,12 +2,22 @@ package EZShare;
 
 import JSON.JSONReader;
 import Resource.HashDatabase;
+import Resource.Resource;
+import exceptions.IncorrectSecretException;
+import exceptions.InvalidResourceException;
+import exceptions.MissingComponentException;
+
 import com.google.gson.JsonObject;
+import com.sun.jndi.toolkit.url.Uri;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,12 +49,10 @@ class ServerControl {
      *
      * @param client the socket client which is trying to connect to the server
      */
-    static void serverClient(Socket client) {
+    static void serverClient(Socket client, String secret) {
         try (Socket clientSocket = client) {
             JSONReader newResource;
             String command;
-            String name, description, channel, owner, uri, ezServer;
-            String[] tags;
             //input stream
             DataInputStream input =
                     new DataInputStream(clientSocket.getInputStream());
@@ -62,16 +70,69 @@ class ServerControl {
                     switch (command) {
                         case PUBLISH:
                             //publish
-                            checkNull(newResource, output);
-                            publish(newResource, db);
+                            try{
+                            	checkNull(newResource, output);
+                            	publish(newResource, db);
+                            	JsonObject successMessage = new JsonObject();
+                                successMessage.addProperty("response", "success");
+                                logger.fine("Successfully published resource.");
+                                output.writeUTF(successMessage.toString());
+                                output.flush();
+                            }catch(InvalidResourceException e1){
+                            	JsonObject errorMessage = new JsonObject();
+                            	errorMessage.addProperty("response", "error");
+                            	errorMessage.addProperty("errorMessage", "invalid resource");
+                            	logger.warning("Resource to publish contained incorrect information that could not be recovered from.");
+                            	output.writeUTF(errorMessage.toString());
+                            	output.flush();
+                            }catch(MissingComponentException e2){
+                            	logger.warning("missing resource");
+                                try {
+                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
+                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
+                                    output.flush();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
                             break;
                         case REMOVE:
                             //remove
-                            checkNull(newResource, output);
-                            remove(newResource, db);
+						try {
+							checkNull(newResource, output);
+							remove(newResource, db);
+						} catch (MissingComponentException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
                             break;
                         case SHARE:
                             //share
+                        	try{
+                        		checkNull(newResource, output);
+                        		share(newResource, db, secret);
+                        	}catch(InvalidResourceException e1){
+                        		JsonObject errorMessage = new JsonObject();
+                            	errorMessage.addProperty("response", "error");
+                            	errorMessage.addProperty("errorMessage", "invalid resource");
+                            	logger.warning("Resource to share contained incorrect information that could not be recovered from.");
+                            	output.writeUTF(errorMessage.toString());
+                            	output.flush();
+                        	}catch(MissingComponentException e2){
+                        		JsonObject errorMessage = new JsonObject();
+                        		errorMessage.addProperty("response", "error");
+                        		errorMessage.addProperty("errorMessage", "missing resource and/or secret");
+                        		logger.warning("Share command missing resource or secret.");
+                        		output.writeUTF(errorMessage.toString());
+                        		output.flush();
+                        	}catch(IncorrectSecretException e3){
+                        		JsonObject errorMessage = new JsonObject();
+                        		errorMessage.addProperty("response", "error");
+                        		errorMessage.addProperty("errorMessage", "incorrect secret");
+                        		logger.warning("Share command used incorrect secret.");
+                        		output.writeUTF(errorMessage.toString());
+                        		output.flush();
+                        	}
                             break;
                         case QUERY:
                             //query
@@ -120,7 +181,13 @@ class ServerControl {
 
     //Probably need a method to check strings etc. are valid, haven't think clearly yet...
     //or should we use a method to check if it is legal in this class and pass it to the new class to do the six functions?
-    private static void publish(JSONReader resource, HashDatabase db) {
+    /**
+     * Validates and inserts a resource into the database for future sharing, which is not a file.
+     * @param resource The resource to be published.
+     * @param db The database the resource should be inserted into.
+     * @throws InvalidResourceException If the resource supplied contains illegal fields, this is thrown.
+     */
+    private static void publish(JSONReader resource, HashDatabase db) throws InvalidResourceException {
         String name = resource.getResourceName();
         String description = resource.getResourceDescription();
         String channel = resource.getResourceChannel();
@@ -128,11 +195,29 @@ class ServerControl {
         String uri = resource.getResourceUri();
         String[] tags = resource.getResourceTags();
         String ezserver = resource.getResourceEZserver();
+        
         //Check strings etc. are valid
-
+        if(!validateResource(name, description, tags, uri, channel, owner, ezserver)){
+        	throw new InvalidResourceException("Trying to publish Resource with illegal fields.");
+        }
+        try{
+    		URI path = new URI(uri);
+    		if(!path.isAbsolute() || path.getScheme().equals("file")){
+    			throw new InvalidResourceException("Trying to publish resource with non-absolute or file uri.");
+    		}
+    	}catch(URISyntaxException e){
+    		throw new InvalidResourceException("Attempting to publish resource with invalid uri syntax.");
+    	}
+        
         //Make sure matching primary key resources are removed.
-
+        Resource match = db.pKeyLookup(channel, uri);
+        if(match != null){
+        	db.deleteResource(match);
+        }
+        
         //Add resource to database.
+        db.insertResource(new Resource(name, description, Arrays.asList(tags), 
+        		          uri, channel, owner, ezserver));
     }
 
     private static void remove(JSONReader resource, HashDatabase db) {
@@ -140,21 +225,94 @@ class ServerControl {
 
         //Remove resource from database.
     }
+    
+    /**
+     * Validates then shares a resource with a file uri, inserting it into the database.
+     * @param resource The resource to be shared.
+     * @param db Database to insert the resource into.
+     * @throws InvalidResourceException If the resource contains incorrect information or invalid fields, this is thrown.
+     * @throws IncorrectSecretException If the secret supplied does not match server secret, this is thrown.
+     * @throws MissingSecretException  If secret is missing from command, this is thrown.
+     */
+    private static void share(JSONReader resource, HashDatabase db, String serverSecret) throws InvalidResourceException, IncorrectSecretException, MissingComponentException{
+    	String name = resource.getResourceName();
+        String description = resource.getResourceDescription();
+        String channel = resource.getResourceChannel();
+        String owner = resource.getResourceOwner();
+        String uri = resource.getResourceUri();
+        String[] tags = resource.getResourceTags();
+        String ezserver = resource.getResourceEZserver();    	
+    	String secret = resource.getSecret();
+        
+    	if(secret == null){
+    		//missing secret
+    		throw new MissingComponentException();
+    	}
+    	
+    	//Check secret
+        if(!secret.equals(serverSecret)){
+        	//Incorrect secret, error.
+        	throw new IncorrectSecretException();
+        }
+        
+    	//Validate strings
+        if(!validateResource(name, description, tags, uri, channel, owner, ezserver)){
+        	throw new InvalidResourceException("Trying to share Resource with illegal fields.");
+        }
+    	//Validate uri
+    	try{
+    		URI path = new URI(uri);
+    		if(!path.isAbsolute() || !path.getScheme().equals("file")){
+    			throw new InvalidResourceException("Trying to share resource with non-absolute or non-file uri.");
+    		}
+    		File f = new File(path);
+    		if(!f.exists() || f.isDirectory()){
+    			throw new InvalidResourceException("File referenced by uri does not exist.");
+    		}
+    	}catch(URISyntaxException e){
+    		throw new InvalidResourceException("Attempting to share resource with invalid uri syntax.");
+    	}
+        
+    	//Remove if match pKey in db
+        Resource match = db.pKeyLookup(channel, uri);
+        if(match != null){
+        	db.deleteResource(match);
+        }
+        
+    	//Add to db
+        db.insertResource(new Resource(name, description, Arrays.asList(tags), 
+		          uri, channel, owner, ezserver));
+    }
 
 
-    private static void checkNull(JSONReader curr, DataOutputStream output) {
+    private static boolean validateString(String s){
+    	return !(s.contains("\0") || s.charAt(0) == ' ' || s.charAt(s.length() - 1) == ' ');
+    }
+    
+    private static boolean validateResource(String name, String desc, String[] tags, String uri, 
+    		                                String channel, String owner, String ezServer){
+    	if(!(validateString(name) && validateString(desc) && validateString(channel) &&
+             validateString(owner) && validateString(uri) && validateString(ezServer))){
+           	//Error with resource
+           	return false;
+        }
+        for(String tag: tags){
+           	if(!validateString(tag)){
+           		return false;
+           	}
+        }
+        if(owner.equals("*")){
+           	return false;
+        }
+    	return true;
+    }
+    
+    private static void checkNull(JSONReader curr, DataOutputStream output) throws MissingComponentException {
         if (curr.getResourceName() == null || curr.getResourceChannel() == null || curr.getResourceUri() == null ||
                 curr.getResourceDescription() == null || curr.getResourceOwner() == null || curr.getResourceTags() == null) {
-            logger.warning("missing resource");
-            try {
-                logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
-                output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
-                output.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            throw new MissingComponentException("Missing resource.");
         }
         // to be continued
-
     }
+
 }
