@@ -2,6 +2,7 @@ package EZShare;
 
 import JSON.JSONReader;
 import Resource.HashDatabase;
+import com.google.gson.JsonObject;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -38,7 +39,7 @@ class ServerControl {
      */
     static void serverClient(Socket client) {
         try (Socket clientSocket = client) {
-        	JSONReader curr;
+        	JSONReader newResource;
             String command;
             String name, description, channel, owner, uri, ezServer;
             String[] tags;
@@ -54,38 +55,47 @@ class ServerControl {
                 jsonString = input.readUTF();
                 if (JSONReader.isJSONValid(jsonString)){
                     //Read command from json.
-                	curr = new JSONReader(jsonString);
-                	command = curr.getCommand();
-                	if(command == PUBLISH){
-                		//publish
-                		checkNull(name = curr.getResourceName());
-                		checkNull(description = curr.getResourceDescription());
-                		checkNull(channel = curr.getResourceChannel());
-                		checkNull(owner = curr.getResourceOwner());
-                		checkNull(uri = curr.getResourceUri());
-                		checkNull(tags = curr.getResourceTags());
-                		checkNull(ezServer = curr.getResourceEZserver());
-                		publish(name, tags, description, uri, channel, owner, ezServer, db);
-                	}else if(command == REMOVE){
-                		checkNull(name = curr.getResourceName());
-                		checkNull(description = curr.getResourceDescription());
-                		checkNull(channel = curr.getResourceChannel());
-                		checkNull(owner = curr.getResourceOwner());
-                		checkNull(uri = curr.getResourceUri());
-                		checkNull(tags = curr.getResourceTags());
-                		checkNull(ezServer = curr.getResourceEZserver());
-                		remove(name, tags, description, uri, channel, owner, ezServer, db);
-                	}else if(command == SHARE){
-                		//share
-                	}else if(command == QUERY){
-                		//query
-                	}else if(command == FETCH){
-                		//fetch
-                	}else if(command == EXCHANGE){
-                		//exchange
-                	}else{
-                		//invalid command
-                	}
+                    newResource = new JSONReader(jsonString);
+                	command = newResource.getCommand();
+					switch (command) {
+						case PUBLISH:
+							//publish
+                            checkNull(newResource, output);
+							publish(newResource, db);
+							break;
+						case REMOVE:
+							//remove
+                            checkNull(newResource, output);
+							remove(newResource, db);
+							break;
+						case SHARE:
+							//share
+							break;
+						case QUERY:
+							//query
+							break;
+						case FETCH:
+							//fetch
+							break;
+						case EXCHANGE:
+							//exchange
+							break;
+						default:
+                            JsonObject errorMessage = new JsonObject();
+                            errorMessage.addProperty("response", "error");
+						    if (command.isEmpty()){
+                                logger.warning("missing command");
+                                errorMessage.addProperty("errorMessage", "missing or incorrect type for command");
+                                output.writeUTF(errorMessage.toString());
+                                output.flush();
+                            }else {
+						        logger.warning("invalid command");
+						        errorMessage.addProperty("errorMessage", "invalid command");
+						        output.writeUTF(errorMessage.toString());
+						        output.flush();
+                            }
+							break;
+					}
                 	logger.fine("[RECEIVE] - " + jsonString);
                     logger.fine("[SENT] - " + "{\"response\":\"success\"}");
                     output.writeUTF("{\"response\":\"success\"}");
@@ -106,8 +116,7 @@ class ServerControl {
         }
     }
     
-    private static void publish(String rName, String[] rTags, String rDesc, String rUri, 
-    		                    String rChannel, String rOwner, String ezServer, HashDatabase db){
+    private static void publish(JSONReader resource, HashDatabase db){
     	//Check strings etc. are valid
     	
     	//Make sure matching primary key resources are removed.
@@ -115,16 +124,24 @@ class ServerControl {
     	//Add resource to database.
     }
     
-    private static void remove(String rName, String[] rTags, String rDesc, String rUri, 
-            String rChannel, String rOwner, String ezServer, HashDatabase db){
+    private static void remove(JSONReader resource, HashDatabase db){
     	//Check strings etc. are valid
     	
     	//Remove resource from database.
 }
     
-    private static void checkNull(Object value){
-    	if(value == null){
-    		//do something about error
+    private static void checkNull(JSONReader curr, DataOutputStream output){
+    	if(curr.getResourceName() == null || curr.getResourceChannel() == null || curr.getResourceUri() == null ||
+                curr.getResourceDescription() == null || curr.getResourceOwner() == null || curr.getResourceTags() == null){
+    	    logger.warning("missing resource");
+    	    try{
+                output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
+                output.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
     	}
+    	// to be continued
+
     }
 }
