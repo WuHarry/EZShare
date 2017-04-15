@@ -71,7 +71,7 @@ class ServerControl {
                         case PUBLISH:
                             //publish
                             try{
-                            	checkNull(newResource, output);
+                            	checkNull(newResource);
                             	publish(newResource, db);
                             	JsonObject successMessage = new JsonObject();
                                 successMessage.addProperty("response", "success");
@@ -99,7 +99,7 @@ class ServerControl {
                         case REMOVE:
                             //remove
 						try {
-							checkNull(newResource, output);
+							checkNull(newResource);
 							remove(newResource, db);
 						} catch (MissingComponentException e) {
 							// TODO Auto-generated catch block
@@ -109,7 +109,7 @@ class ServerControl {
                         case SHARE:
                             //share
                         	try{
-                        		checkNull(newResource, output);
+                        		checkNull(newResource);
                         		share(newResource, db, secret);
                         	}catch(InvalidResourceException e1){
                         		JsonObject errorMessage = new JsonObject();
@@ -285,10 +285,28 @@ class ServerControl {
     }
 
 
+    /**
+     * Returns true only if the String s is valid according to rules for resource field 
+     * strings supplied to the server.
+     * @param s String to be checked.
+     * @return True if s is valid, false otherwise.
+     */
     private static boolean validateString(String s){
     	return !(s.contains("\0") || s.charAt(0) == ' ' || s.charAt(s.length() - 1) == ' ');
     }
     
+    /**
+     * Returns true only if the described resource is made up of valid components (in terms of 
+     * String composition, not particular logic of a command).
+     * @param name 
+     * @param desc 
+     * @param tags
+     * @param uri
+     * @param channel
+     * @param owner
+     * @param ezServer
+     * @return
+     */
     private static boolean validateResource(String name, String desc, String[] tags, String uri, 
     		                                String channel, String owner, String ezServer){
     	if(!(validateString(name) && validateString(desc) && validateString(channel) &&
@@ -307,7 +325,13 @@ class ServerControl {
     	return true;
     }
     
-    private static void checkNull(JSONReader curr, DataOutputStream output) throws MissingComponentException {
+    /**
+     * Throws exception if curr does not contain fields necessary to describe a resource.
+     * @param curr The JSONReader which will be checked for a complete resource.
+     * @param output Output to write to.
+     * @throws MissingComponentException Thrown if curr does not contain full resource descriptor.
+     */
+    private static void checkNull(JSONReader curr) throws MissingComponentException {
         if (curr.getResourceName() == null || curr.getResourceChannel() == null || curr.getResourceUri() == null ||
                 curr.getResourceDescription() == null || curr.getResourceOwner() == null || curr.getResourceTags() == null) {
             throw new MissingComponentException("Missing resource.");
