@@ -118,7 +118,16 @@ class ServerControl {
         }
     }
 
+    //Probably need a method to check strings etc. are valid, haven't think clearly yet...
+    //or should we use a method to check if it is legal in this class and pass it to the new class to do the six functions?
     private static void publish(JSONReader resource, HashDatabase db) {
+        String name = resource.getResourceName();
+        String description = resource.getResourceDescription();
+        String channel = resource.getResourceChannel();
+        String owner = resource.getResourceOwner();
+        String uri = resource.getResourceUri();
+        String[] tags = resource.getResourceTags();
+        String ezserver = resource.getResourceEZserver();
         //Check strings etc. are valid
 
         //Make sure matching primary key resources are removed.
@@ -131,6 +140,7 @@ class ServerControl {
 
         //Remove resource from database.
     }
+
 
     private static void checkNull(JSONReader curr, DataOutputStream output) {
         if (curr.getResourceName() == null || curr.getResourceChannel() == null || curr.getResourceUri() == null ||
