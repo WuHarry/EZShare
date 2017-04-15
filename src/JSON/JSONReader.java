@@ -1,13 +1,13 @@
 package JSON;
 
+import com.google.gson.*;
+
 /**
  * Created by Yahang Wu on 2017/3/31.
  * COMP90015 Distributed System Project1 EZServer
  * This file provide the methods to read JSON file
  * required in the EZServer
  */
-
-import com.google.gson.*;
 
 public class JSONReader {
 

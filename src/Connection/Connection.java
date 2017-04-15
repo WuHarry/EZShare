@@ -1,14 +1,5 @@
 package Connection;
 
-/**
- * Created by Yahang Wu on 2017/4/5.
- * COMP90015 Distributed System Project1 EZServer
- * This file provide the methods to read the command line
- * and get instruction from the command line
- * Also, it read the command line and convert it to the json string
- * in order to sent to the server
- */
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.apache.commons.cli.CommandLine;
@@ -19,6 +10,15 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 
 import java.util.logging.Logger;
+
+/**
+ * Created by Yahang Wu on 2017/4/5.
+ * COMP90015 Distributed System Project1 EZServer
+ * This file provide the methods to read the command line
+ * and get instruction from the command line
+ * Also, it read the command line and convert it to the json string
+ * in order to sent to the server
+ */
 
 public class Connection {
 

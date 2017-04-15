@@ -1,5 +1,12 @@
 package EZShare;
 
+import javax.net.ServerSocketFactory;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.ServerSocket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Created by Yahang Wu on 2017/3/31.
  * COMP90015 Distributed System Project1 EZServer
@@ -7,13 +14,6 @@ package EZShare;
  * include establish the connection with the client
  * and receive the command from the client
  */
-
-import javax.net.ServerSocketFactory;
-import java.io.IOException;
-import java.net.Socket;
-import java.net.ServerSocket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Server {
 

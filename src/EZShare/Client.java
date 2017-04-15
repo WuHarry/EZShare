@@ -1,13 +1,5 @@
 package EZShare;
 
-/**
- * Created by Yahang Wu on 2017/3/31.
- * COMP90015 Distributed System Project1 EZServer
- * The client main function
- * include establish the connection with the server
- * and send the command to the server in json string form
- */
-
 import Connection.Connection;
 import JSON.JSONReader;
 import com.google.gson.Gson;
@@ -18,6 +10,14 @@ import java.io.*;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.logging.*;
+
+/**
+ * Created by Yahang Wu on 2017/3/31.
+ * COMP90015 Distributed System Project1 EZServer
+ * The client main function
+ * include establish the connection with the server
+ * and send the command to the server in json string form
+ */
 
 public class Client {
 
