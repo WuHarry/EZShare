@@ -2,7 +2,6 @@ package EZShare;
 
 import Connection.Connection;
 import JSON.JSONReader;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -150,6 +149,7 @@ public class Client {
             //reset resource size and name
             resourceSize = 0;
             resourceName = "";
+            downloadingFile.close();
         } catch (IOException e) {
             logger.warning("[ERROR] - Resources download failed!");
             e.printStackTrace();

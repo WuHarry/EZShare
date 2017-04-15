@@ -8,7 +8,6 @@ import exceptions.InvalidResourceException;
 import exceptions.MissingComponentException;
 
 import com.google.gson.JsonObject;
-import com.sun.jndi.toolkit.url.Uri;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -18,7 +17,6 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
