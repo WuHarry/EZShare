@@ -37,7 +37,7 @@ public class Client {
     public static void main(String[] args) {
 
         //load log configuration
-        LogConfig.logConfig();
+        Common.logConfig();
         //get the command json string
         Connection connection = new Connection();
         String commandJsonString = connection.clientCli(args);

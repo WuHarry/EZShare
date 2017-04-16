@@ -70,8 +70,8 @@ class ServerControl {
                         case PUBLISH:
                             //publish
                             try {
-                                checkNull(newResource);
-                                publish(newResource, db);
+                                Common.checkNull(newResource);
+                                Publish.publish(newResource, db);
                                 JsonObject successMessage = new JsonObject();
                                 successMessage.addProperty("response", "success");
                                 logger.info("Successfully published resource.");
@@ -100,7 +100,7 @@ class ServerControl {
                         case REMOVE:
                             //remove
                             try {
-                                checkNull(newResource);
+                                Common.checkNull(newResource);
                                 remove(newResource, db);
                             } catch (MissingComponentException e) {
                                 // TODO Auto-generated catch block
@@ -110,7 +110,7 @@ class ServerControl {
                         case SHARE:
                             //share
                             try {
-                                checkNull(newResource);
+                                Common.checkNull(newResource);
                                 share(newResource, db, secret);
                             } catch (InvalidResourceException e1) {
                                 JsonObject errorMessage = new JsonObject();
@@ -179,45 +179,6 @@ class ServerControl {
     //Probably need a method to check strings etc. are valid, haven't think clearly yet...
     //or should we use a method to check if it is legal in this class and pass it to the new class to do the six functions?
 
-    /**
-     * Validates and inserts a resource into the database for future sharing, which is not a file.
-     *
-     * @param resource The resource to be published.
-     * @param db       The database the resource should be inserted into.
-     * @throws InvalidResourceException If the resource supplied contains illegal fields, this is thrown.
-     */
-    private static void publish(JSONReader resource, HashDatabase db) throws InvalidResourceException {
-        String name = resource.getResourceName();
-        String description = resource.getResourceDescription();
-        String channel = resource.getResourceChannel();
-        String owner = resource.getResourceOwner();
-        String uri = resource.getResourceUri();
-        String[] tags = resource.getResourceTags();
-        String ezserver = resource.getResourceEZserver();
-
-        //Check strings etc. are valid
-        if (!validateResource(name, description, tags, uri, channel, owner)) {
-            throw new InvalidResourceException("Trying to publish Resource with illegal fields.");
-        }
-        try {
-            URI path = new URI(uri);
-            if (!path.isAbsolute() || path.getScheme().equals("file")) {
-                throw new InvalidResourceException("Trying to publish resource with non-absolute or file uri.");
-            }
-        } catch (URISyntaxException e) {
-            throw new InvalidResourceException("Attempting to publish resource with invalid uri syntax.");
-        }
-
-        //Make sure matching primary key resources are removed.
-        Resource match = db.pKeyLookup(channel, uri);
-        if (match != null) {
-            db.deleteResource(match);
-        }
-
-        //Add resource to database.
-        db.insertResource(new Resource(name, description, Arrays.asList(tags),
-                uri, channel, owner, ezserver));
-    }
 
     private static void remove(JSONReader resource, HashDatabase db) {
         //Check strings etc. are valid
@@ -256,7 +217,7 @@ class ServerControl {
         }
 
         //Validate strings
-        if (!validateResource(name, description, tags, uri, channel, owner)) {
+        if (!Common.validateResource(name, description, tags, uri, channel, owner)) {
             throw new InvalidResourceException("Trying to share Resource with illegal fields.");
         }
         //Validate uri
@@ -282,60 +243,6 @@ class ServerControl {
         //Add to db
         db.insertResource(new Resource(name, description, Arrays.asList(tags),
                 uri, channel, owner, ezserver));
-    }
-
-
-    /**
-     * Returns true only if the String s is valid according to rules for resource field
-     * strings supplied to the server.
-     *
-     * @param s String to be checked.
-     * @return True if s is valid, false otherwise.
-     */
-    private static boolean validateString(String s) {
-        return s.length() == 0 || !(s.contains("\0") || s.charAt(0) == ' ' || s.charAt(s.length() - 1) == ' ');
-    }
-
-    /**
-     * Returns true only if the described resource is made up of valid components (in terms of
-     * String composition, not particular logic of a command).
-     *
-     * @param name
-     * @param desc
-     * @param tags
-     * @param uri
-     * @param channel
-     * @param owner
-     * @return
-     */
-    private static boolean validateResource(String name, String desc, String[] tags, String uri,
-                                            String channel, String owner) {
-        if (!(validateString(name) && validateString(desc) && validateString(channel) &&
-                validateString(owner) && validateString(uri))) {
-            //Error with resource
-            return false;
-        }
-        for (String tag : tags) {
-            if (!validateString(tag)) {
-                return false;
-            }
-        }
-        return !owner.equals("*");
-    }
-
-    /**
-     * Throws exception if curr does not contain fields necessary to describe a resource.
-     *
-     * @param curr   The JSONReader which will be checked for a complete resource.
-     * @param output Output to write to.
-     * @throws MissingComponentException Thrown if curr does not contain full resource descriptor.
-     */
-    private static void checkNull(JSONReader curr) throws MissingComponentException {
-        if (curr.getResourceName() == null || curr.getResourceChannel() == null || curr.getResourceUri() == null ||
-                curr.getResourceDescription() == null || curr.getResourceOwner() == null || curr.getResourceTags() == null) {
-            throw new MissingComponentException("Missing resource.");
-        }
-        // to be continued
     }
 
 }

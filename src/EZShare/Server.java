@@ -4,9 +4,7 @@ import Connection.Connection;
 
 import javax.net.ServerSocketFactory;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.Socket;
-import java.security.SecureRandom;
 import java.net.ServerSocket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,7 +32,7 @@ public class Server {
     public static void main(String[] args) {
 
         //load log configuration
-        LogConfig.logConfig();
+        Common.logConfig();
         //Get the configuration from the Json string
         Connection connection = new Connection();
         connection.serverCli(args);
