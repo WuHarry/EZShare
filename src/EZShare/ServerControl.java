@@ -74,6 +74,7 @@ class ServerControl {
                             	JsonObject successMessage = new JsonObject();
                                 successMessage.addProperty("response", "success");
                                 logger.fine("Successfully published resource.");
+                                logger.fine("[SENT] - " + successMessage.toString());
                                 output.writeUTF(successMessage.toString());
                                 output.flush();
                             }catch(InvalidResourceException e1){
@@ -81,6 +82,7 @@ class ServerControl {
                             	errorMessage.addProperty("response", "error");
                             	errorMessage.addProperty("errorMessage", "invalid resource");
                             	logger.warning("Resource to publish contained incorrect information that could not be recovered from.");
+                            	logger.fine("[SENT] - " + errorMessage.toString());
                             	output.writeUTF(errorMessage.toString());
                             	output.flush();
                             }catch(MissingComponentException e2){
@@ -157,10 +159,6 @@ class ServerControl {
                             }
                             break;
                     }
-                    logger.fine("[RECEIVE] - " + jsonString);
-                    logger.fine("[SENT] - " + "{\"response\":\"success\"}");
-                    output.writeUTF("{\"response\":\"success\"}");
-                    output.flush();
                 } else {
                     logger.fine("[RECEIVE] - " + jsonString);
                     logger.fine("[SENT] - " + "{\"response\":\"error, invalid string\"}");
@@ -195,7 +193,7 @@ class ServerControl {
         String ezserver = resource.getResourceEZserver();
         
         //Check strings etc. are valid
-        if(!validateResource(name, description, tags, uri, channel, owner, ezserver)){
+        if(!validateResource(name, description, tags, uri, channel, owner)){
         	throw new InvalidResourceException("Trying to publish Resource with illegal fields.");
         }
         try{
@@ -230,7 +228,7 @@ class ServerControl {
      * @param db Database to insert the resource into.
      * @throws InvalidResourceException If the resource contains incorrect information or invalid fields, this is thrown.
      * @throws IncorrectSecretException If the secret supplied does not match server secret, this is thrown.
-     * @throws MissingSecretException  If secret is missing from command, this is thrown.
+     * @throws MissingComponentException  If secret is missing from command, this is thrown.
      */
     private static void share(JSONReader resource, HashDatabase db, String serverSecret) throws InvalidResourceException, IncorrectSecretException, MissingComponentException{
     	String name = resource.getResourceName();
@@ -254,7 +252,7 @@ class ServerControl {
         }
         
     	//Validate strings
-        if(!validateResource(name, description, tags, uri, channel, owner, ezserver)){
+        if(!validateResource(name, description, tags, uri, channel, owner)){
         	throw new InvalidResourceException("Trying to share Resource with illegal fields.");
         }
     	//Validate uri
@@ -289,8 +287,8 @@ class ServerControl {
      * @param s String to be checked.
      * @return True if s is valid, false otherwise.
      */
-    private static boolean validateString(String s){
-    	return !(s.contains("\0") || s.charAt(0) == ' ' || s.charAt(s.length() - 1) == ' ');
+    private static boolean validateString(String s) {
+        return s.length() == 0 || !(s.contains("\0") || s.charAt(0) == ' ' || s.charAt(s.length() - 1) == ' ');
     }
     
     /**
@@ -302,13 +300,12 @@ class ServerControl {
      * @param uri
      * @param channel
      * @param owner
-     * @param ezServer
      * @return
      */
     private static boolean validateResource(String name, String desc, String[] tags, String uri, 
-    		                                String channel, String owner, String ezServer){
+    		                                String channel, String owner){
     	if(!(validateString(name) && validateString(desc) && validateString(channel) &&
-             validateString(owner) && validateString(uri) && validateString(ezServer))){
+             validateString(owner) && validateString(uri))){
            	//Error with resource
            	return false;
         }
@@ -317,10 +314,7 @@ class ServerControl {
            		return false;
            	}
         }
-        if(owner.equals("*")){
-           	return false;
-        }
-    	return true;
+        return !owner.equals("*");
     }
     
     /**
