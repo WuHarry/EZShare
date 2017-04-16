@@ -88,13 +88,9 @@ class ServerControl {
                                 output.flush();
                             } catch (MissingComponentException e2) {
                                 logger.warning("missing resource");
-                                try {
-                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
-                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
-                                    output.flush();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
+                                logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
+                                output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
+                                output.flush();
                             }
                             break;
                         case REMOVE:
@@ -136,7 +132,22 @@ class ServerControl {
                             }
                             break;
                         case QUERY:
-                            //query
+                            try {
+                                Common.checkNull(newResource);
+                                Query.query(newResource,db);
+                            } catch (InvalidResourceException e1) {
+                                JsonObject errorMessage = new JsonObject();
+                                errorMessage.addProperty("response", "error");
+                                errorMessage.addProperty("errorMessage", "invalid resourceTemplate");
+                                logger.warning("Resource to share contained incorrect information that could not be recovered from.");
+                                output.writeUTF(errorMessage.toString());
+                                output.flush();
+                            } catch (MissingComponentException e2) {
+                                logger.warning("missing resourceTemplate");
+                                logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
+                                output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
+                                output.flush();
+                            }
                             break;
                         case FETCH:
                             //fetch
