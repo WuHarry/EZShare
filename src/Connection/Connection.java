@@ -8,6 +8,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.DefaultParser;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.logging.Logger;
 
 /**
@@ -25,6 +27,8 @@ public class Connection {
             Logger.getLogger(Connection.class.getName());
     //Debug Mode, true is on, false is off.
     public static boolean debugSwitch = false;
+
+    //Client
     public String host = "1.1.1.1";
     public int port = 3000;
 
@@ -37,6 +41,13 @@ public class Connection {
     private String servers = "";
     private String uri = "";
     private JsonArray tagsArray = new JsonArray();
+
+    //Server config option
+    public String hostName = "Biubiubiu Server";
+    public String connectionIntervalLimit = "";
+    public int exchangeInterval = 600;
+    public int serverPort = 4000;
+    public String serverSecret = "";
 
     /**
      * @param args the command line arguments
@@ -223,13 +234,15 @@ public class Connection {
     /**
      * @param args the command line arguments
      */
-    public static void serverCli(String[] args) {
+    public void serverCli(String[] args) {
 
-        String advertisedHostname = "EZShare Server";
-        String connectionIntervalLimit = "";
-        int exchangeInterval = 600;
-        int port = 0;
-        String secret = "kfjdskfjaskldfjkalsjfk";
+        //Generate long, random string for server to use as secret.
+        //Might be a bit too long at moment.
+        SecureRandom random = new SecureRandom();
+        serverSecret = new BigInteger(130, random).toString(32);
+
+        //debug switch
+        boolean debugSwitch = false;
 
         Options options = new Options();
 
@@ -249,59 +262,45 @@ public class Connection {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
             //help(options);
-            System.out.println("I am here.");
+            logger.warning("Wrong command line input;");
+            System.out.println("Wrong command line input;");
         }
 
         assert cmd != null;
 
+        if (cmd.hasOption("debug")) {
+            debugSwitch = true;
+            logger.info("debug mode on");
+        }
+
         if (cmd.hasOption("advertisedhostname")) {
-            advertisedHostname += cmd.getOptionValue("advertisedhostname");
-            System.out.println("advertisedhostname succeed: " +
-                    advertisedHostname);
-        } else {
-            System.out.println(advertisedHostname);
+            hostName = cmd.getOptionValue("advertisedhostname");
+            if (debugSwitch) logger.info("Hostname changed to " + hostName);
         }
 
         if (cmd.hasOption("connectionintervallimit")) {
             connectionIntervalLimit =
                     cmd.getOptionValue("connectionintervallimit");
-            System.out.println("connectionintervallimit succeed: " +
-                    connectionIntervalLimit);
-        } else {
-            connectionIntervalLimit =
-                    "The user does not provide connection interval limit";
-            System.out.println(connectionIntervalLimit);
+            if (debugSwitch) logger.info(
+                    "connection interval limit changed to: " +
+                            connectionIntervalLimit);
         }
 
         if (cmd.hasOption("exchangeinterval")) {
-            exchangeInterval +=
+            exchangeInterval =
                     Integer.parseInt(cmd.getOptionValue("exchangeinterval"));
-            System.out.println("Exchange interval succeed: " +
-                    exchangeInterval);
-        } else {
-            System.out.println("default exchange interval: " +
+            if (debugSwitch) logger.info("Exchange interval changed to: " +
                     exchangeInterval);
         }
 
         if (cmd.hasOption("port")) {
-            port = Integer.parseInt(cmd.getOptionValue("port"));
-            System.out.println("port succeed: " + port);
-        } else {
-            System.out.println("port failed, port remain: " + port);
+            serverPort = Integer.parseInt(cmd.getOptionValue("port"));
+            if (debugSwitch) logger.info("port set to: " + serverPort);
         }
 
         if (cmd.hasOption("secret")) {
-            secret += cmd.getOptionValue("secret");
-            System.out.println("secret succeed: " + secret);
-        } else {
-            System.out.println(secret);
-        }
-
-        if (cmd.hasOption("debug")) {
-            System.out.println("debug succeed");
-        } else {
-            System.out.println("debug failed");
+            serverSecret = cmd.getOptionValue("secret");
+            if (debugSwitch) logger.info("secret changed to: " + serverSecret);
         }
     }
-
 }

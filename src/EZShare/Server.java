@@ -1,5 +1,7 @@
 package EZShare;
 
+import Connection.Connection;
+
 import javax.net.ServerSocketFactory;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -26,29 +28,33 @@ public class Server {
 
     /**
      * The main function of the server
+     *
      * @param args the command line arguments
      */
     public static void main(String[] args) {
 
         //load log configuration
         LogConfig.logConfig();
+        //Get the configuration from the Json string
+        Connection connection = new Connection();
+        connection.serverCli(args);
+        //change port
+        port = connection.serverPort;
 
-        //Generate long, random string for server to use as secret.
-        //Might be a bit too long at moment.
-        SecureRandom random = new SecureRandom();
-        String secret = new BigInteger(130, random).toString(32);
-        
         ServerSocketFactory factory = ServerSocketFactory.getDefault();
         try (ServerSocket server = factory.createServerSocket(port)) {
-            logger.info("Starting the EZShare Server");
-            logger.fine("Waiting for connection");
+            logger.info("Starting the Biubiubiu EZShare Server");
+            logger.info("using secret: " + connection.serverSecret);
+            logger.info("using advertised hostname: " + connection.hostName);
+            logger.info("bound to port " + port);
+            logger.info("started");
 
             while (true) {
                 Socket client = server.accept();
                 counter++;
 
                 // Start a new thread for a connection
-                Thread t = new Thread(() -> ServerControl.serverClient(client, secret));
+                Thread t = new Thread(() -> ServerControl.serverClient(client, connection.serverSecret));
                 t.start();
             }
 
@@ -56,6 +62,4 @@ public class Server {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
     }
-
-
 }
