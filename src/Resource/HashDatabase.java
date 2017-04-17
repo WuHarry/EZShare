@@ -18,7 +18,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class HashDatabase {
 
     private ReadWriteLock lock;
-    private Map<String, ChannelDB> db;    //Maps channel to map of uri to resource.
+    //Maps channel to map of uri to resource.
+    private Map<String, ChannelDB> db;
 
     /**
      * Internal class to separate resources by channel and allow
@@ -36,7 +37,6 @@ public class HashDatabase {
             this.descMap = new HashMap<String, List<Resource>>();
             this.ownerMap = new HashMap<String, List<Resource>>();
         }
-
     }
 
     /**
@@ -289,4 +289,17 @@ public class HashDatabase {
         }
     }
 
+    // need update !!!
+    /**
+     * The method to get the size of the database
+     *
+     * @return the number of resources
+     */
+    public int getDatabaseSize() {
+        int count = 0;
+        for (ChannelDB list : db.values()) {
+            count += list.uriMap.size();
+        }
+        return count;
+    }
 }
