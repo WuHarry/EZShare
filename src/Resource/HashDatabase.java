@@ -20,6 +20,7 @@ public class HashDatabase {
     private ReadWriteLock lock;
     //Maps channel to map of uri to resource.
     private Map<String, ChannelDB> db;
+    private int size = 0;
 
     /**
      * Internal class to separate resources by channel and allow
@@ -223,6 +224,8 @@ public class HashDatabase {
                 }
             }
             channelDB.uriMap.put(res.getUri(), res);
+            //update the size of the database
+            size++;
             if (channelDB.ownerMap.containsKey(res.getOwner())) {
                 temp = channelDB.ownerMap.get(res.getOwner());
                 if (temp.contains(res)) {
@@ -283,23 +286,20 @@ public class HashDatabase {
                     channelDB.ownerMap.get(res.getOwner()).remove(res);
                 }
                 channelDB.uriMap.remove(res.getUri());
+                //update the size of the database
+                size--;
             }
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    // need update !!!
     /**
      * The method to get the size of the database
      *
      * @return the number of resources
      */
     public int getDatabaseSize() {
-        int count = 0;
-        for (ChannelDB list : db.values()) {
-            count += list.uriMap.size();
-        }
-        return count;
+        return this.size;
     }
 }

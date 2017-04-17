@@ -184,8 +184,7 @@ class ServerControl {
                         output.writeUTF("{\"response\":\"error, invalid string\"}");
                         output.flush();
                     }
-                    //For test for now
-                    System.out.println("Database size: " + db.getDatabaseSize());
+//                    System.out.println("Database size: " + db.getDatabaseSize());
                 }
             }
         } catch (IOException ex) {
