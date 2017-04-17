@@ -48,18 +48,18 @@ class ServerControl {
      * @param client the socket client which is trying to connect to the server
      */
     static void serverClient(Socket client, String secret) {
-        try {
+        try (Socket clientSocket = client) {
             JSONReader newResource;
             String command;
             //input stream
             DataInputStream input =
-                    new DataInputStream(client.getInputStream());
+                    new DataInputStream(clientSocket.getInputStream());
             //output stream
             DataOutputStream output =
-                    new DataOutputStream(client.getOutputStream());
+                    new DataOutputStream(clientSocket.getOutputStream());
 
             String jsonString;
-            while(true){
+            while (true) {
                 if (input.available() > 0) {
                     jsonString = input.readUTF();
                     logger.fine("[RECEIVE] - " + jsonString);
@@ -135,7 +135,7 @@ class ServerControl {
                             case QUERY:
                                 try {
                                     Common.checkNull(newResource);
-                                    Query.query(newResource,db);
+                                    Query.query(newResource, db);
                                 } catch (InvalidResourceException e1) {
                                     JsonObject errorMessage = new JsonObject();
                                     errorMessage.addProperty("response", "error");
