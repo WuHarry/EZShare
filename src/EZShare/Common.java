@@ -3,7 +3,6 @@ package EZShare;
 import JSON.JSONReader;
 import exceptions.MissingComponentException;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.logging.LogManager;

@@ -34,6 +34,14 @@ public class Client {
     private static final Logger logger = Logger.getLogger(
             Client.class.getName());
 
+    /**
+     * The Client main method
+     * Establish the connection to the server
+     * send the command json String to the server
+     * get the response from the server
+     *
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
 
         //load log configuration
@@ -41,7 +49,6 @@ public class Client {
         //get the command json string
         Connection connection = new Connection();
         String commandJsonString = connection.clientCli(args);
-
         //update ip and port
         ip = connection.host;
         port = connection.port;
@@ -74,7 +81,7 @@ public class Client {
                             logger.fine("[RECEIVE] - " + message);
                         }
                         System.out.println(message);
-                        checkResources(message);
+                        checkResources(message, Connection.command);
                         //check whether it is time to close connection
                         if (theEnd) break;
                     }
@@ -91,8 +98,9 @@ public class Client {
      * Also check whether it is the end of the connection.
      *
      * @param message the server returned message
+     * @param command the client command sent to the server
      */
-    private static void checkResources(String message) {
+    private static void checkResources(String message, String command) {
         if (JSONReader.isJSONValid(message)) {
             JsonParser parser = new JsonParser();
             JsonObject response = (JsonObject) parser.parse(message);
@@ -108,6 +116,15 @@ public class Client {
                 resourceName = uri[uri.length - 1];
             } else if (response.has("resultSize")) {
                 theEnd = true;
+            } else if (response.has("response")) {
+                if (response.get("response").getAsString().equals("error")) {
+                    theEnd = true;
+                }
+                if ((command.equals("PUBLISH") || command.equals("REMOVE") ||
+                        command.equals("SHARE") || command.equals("EXCHANGE"))
+                        && response.get("response").getAsString().equals("success")) {
+                    theEnd = true;
+                }
             }
         }
     }

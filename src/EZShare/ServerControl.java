@@ -46,6 +46,7 @@ class ServerControl {
      * The method to read the clients' requests and send responses
      *
      * @param client the socket client which is trying to connect to the server
+     * @param secret the server's secret
      */
     static void serverClient(Socket client, String secret) {
         try (Socket clientSocket = client) {

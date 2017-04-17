@@ -26,6 +26,8 @@ public class Server {
 
     /**
      * The main function of the server
+     * establish the connection to the client
+     * handle multiple clients
      *
      * @param args the command line arguments
      */

@@ -5,7 +5,6 @@ import Resource.HashDatabase;
 import Resource.Resource;
 import exceptions.InvalidResourceException;
 
-import java.util.Collection;
 import java.util.HashSet;
 
 

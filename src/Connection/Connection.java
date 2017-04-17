@@ -27,6 +27,7 @@ public class Connection {
             Logger.getLogger(Connection.class.getName());
     //Debug Mode, true is on, false is off.
     public static boolean debugSwitch = false;
+    public static String command = "";
 
     //Client
     public String host = "1.1.1.1";
@@ -50,6 +51,10 @@ public class Connection {
     public String serverSecret = "";
 
     /**
+     * The method to add and analyze the command options for the client
+     * and config different parameters of the client and send the users' command
+     * to the server as a json string
+     *
      * @param args the command line arguments
      * @return commandObject.toString() the json string which contains
      * the command and attributes
@@ -144,7 +149,8 @@ public class Connection {
         }
 
         if (cmd.hasOption("publish") && commandObject.get("command") == null) {
-            commandObject.addProperty("command", "PUBLISH");
+            command = "PUBLISH";
+            commandObject.addProperty("command", command);
             JsonObject resource = new JsonObject();
             resourceGenerator(resource);
             commandObject.add("resource", resource);
@@ -153,7 +159,8 @@ public class Connection {
         }
 
         if (cmd.hasOption("query") && commandObject.get("command") == null) {
-            commandObject.addProperty("command", "QUERY");
+            command = "QUERY";
+            commandObject.addProperty("command", command);
             commandObject.addProperty("relay", true);
             JsonObject resorceTemplate = new JsonObject();
             resourceGenerator(resorceTemplate);
@@ -163,7 +170,8 @@ public class Connection {
         }
 
         if (cmd.hasOption("remove") && commandObject.get("command") == null) {
-            commandObject.addProperty("command", "REMOVE");
+            command = "REMOVE";
+            commandObject.addProperty("command", command);
             JsonObject resource = new JsonObject();
             resourceGenerator(resource);
             commandObject.add("resource", resource);
@@ -172,7 +180,8 @@ public class Connection {
         }
 
         if (cmd.hasOption("share") && commandObject.get("command") == null) {
-            commandObject.addProperty("command", "SHARE");
+            command = "SHARE";
+            commandObject.addProperty("command", command);
             commandObject.addProperty("secret", secret);
             JsonObject resource = new JsonObject();
             resourceGenerator(resource);
@@ -182,7 +191,8 @@ public class Connection {
         }
 
         if (cmd.hasOption("exchange") && commandObject.get("command") == null) {
-            commandObject.addProperty("command", "EXCHANGE");
+            command = "EXCHANGE";
+            commandObject.addProperty("command", command);
 
             JsonObject server1 = new JsonObject();
             JsonObject server2 = new JsonObject();
@@ -205,7 +215,8 @@ public class Connection {
         }
 
         if (cmd.hasOption("fetch") && commandObject.get("command") == null) {
-            commandObject.addProperty("command", "FETCH");
+            command = "FETCH";
+            commandObject.addProperty("command", command);
             JsonObject resourceTemplate = new JsonObject();
             resourceGenerator(resourceTemplate);
             commandObject.add("resourceTemplate", resourceTemplate);
@@ -232,6 +243,9 @@ public class Connection {
     }
 
     /**
+     * The method to add and analyze the command options for the server
+     * and config different parameters of the server
+     *
      * @param args the command line arguments
      */
     public void serverCli(String[] args) {
