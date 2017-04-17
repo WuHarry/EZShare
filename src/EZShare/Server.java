@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 public class Server {
 
-    private static int port = 4000;
+    public static int port = 4000;
     private static int counter = 0;
     private static Logger logger = Logger.getLogger(
             Server.class.getName());
@@ -45,7 +45,7 @@ public class Server {
         try (ServerSocket server = factory.createServerSocket(port)) {
             logger.info("Starting the Biubiubiu EZShare Server");
             logger.info("using secret: " + connection.serverSecret);
-            logger.info("using advertised hostname: " + connection.hostName);
+            logger.info("using advertised hostname: " + Connection.hostName);
             logger.info("bound to port " + port);
             logger.info("started");
 

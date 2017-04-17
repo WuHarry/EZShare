@@ -2,7 +2,6 @@ package EZShare;
 
 import JSON.JSONReader;
 import Resource.HashDatabase;
-import Resource.Resource;
 import exceptions.IncorrectSecretException;
 import exceptions.InvalidResourceException;
 import exceptions.MissingComponentException;
@@ -11,12 +10,8 @@ import com.google.gson.JsonObject;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -208,6 +203,4 @@ class ServerControl {
         logger.fine("[SENT] - " + errorMessage.toString());
         return errorMessage;
     }
-
-
 }

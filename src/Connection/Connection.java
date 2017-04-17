@@ -44,7 +44,7 @@ public class Connection {
     private JsonArray tagsArray = new JsonArray();
 
     //Server config option
-    public String hostName = "Biubiubiu Server";
+    public static String hostName = "Biubiubiu Server";
     public String connectionIntervalLimit = "";
     public int exchangeInterval = 600;
     public int serverPort = 4000;

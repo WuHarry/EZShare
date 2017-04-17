@@ -1,12 +1,11 @@
 package EZShare;
 
+import Connection.Connection;
 import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
 import exceptions.InvalidResourceException;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 
 /**
@@ -29,7 +28,7 @@ class Publish {
         String owner = resource.getResourceOwner();
         String uri = resource.getResourceUri();
         String[] tags = resource.getResourceTags();
-        String ezserver = resource.getResourceEZserver();
+        String ezserver = Connection.hostName + ":" + Server.port;
 
         //Check strings etc. are valid
         if (!Common.validateResource(name, description, tags, uri, channel, owner)) {
