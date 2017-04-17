@@ -19,4 +19,4 @@ hs_err_pid*
 
 .project
 /out
-/src/client_file/*
+/client_file/*

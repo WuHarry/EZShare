@@ -3,6 +3,7 @@ package EZShare;
 import JSON.JSONReader;
 import exceptions.MissingComponentException;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.logging.LogManager;
@@ -14,7 +15,7 @@ import java.util.logging.LogManager;
  */
 
 class Common {
-    static void logConfig(){
+    static void logConfig() {
         //Load log config file
         try {
             FileInputStream config = new FileInputStream("logger.properties");
@@ -68,8 +69,8 @@ class Common {
     /**
      * Throws exception if curr does not contain fields necessary to describe a resource.
      *
-     * @param curr   The JSONReader which will be checked for a complete resource.
-     * output Output to write to.
+     * @param curr The JSONReader which will be checked for a complete resource.
+     *             output Output to write to.
      * @throws MissingComponentException Thrown if curr does not contain full resource descriptor.
      */
     public static void checkNull(JSONReader curr) throws MissingComponentException {

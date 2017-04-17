@@ -121,7 +121,16 @@ public class Client {
         try {
             //reset trigger
             hasResources = false;
-            String fileName = "src\\client_file\\" + resourceName;
+            //get the separator from the system, different between linux and win
+            String separator = File.separator;
+            //get the system path
+            String path = System.getProperty("user.dir");
+            path += (separator + "client_file" + separator);
+            //make the dir if not exist
+            File file = new File(path);
+            if (!file.exists()) file.mkdir();
+            //get file dir
+            String fileName = path + separator + resourceName;
             RandomAccessFile downloadingFile =
                     new RandomAccessFile(fileName, "rw");
             long fileSizeRemaining = resourceSize;
