@@ -69,7 +69,7 @@ class Common {
      * Throws exception if curr does not contain fields necessary to describe a resource.
      *
      * @param curr   The JSONReader which will be checked for a complete resource.
-     * @param output Output to write to.
+     * output Output to write to.
      * @throws MissingComponentException Thrown if curr does not contain full resource descriptor.
      */
     public static void checkNull(JSONReader curr) throws MissingComponentException {

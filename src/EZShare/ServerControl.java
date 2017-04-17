@@ -48,139 +48,137 @@ class ServerControl {
      * @param client the socket client which is trying to connect to the server
      */
     static void serverClient(Socket client, String secret) {
-        try (Socket clientSocket = client) {
+        try {
             JSONReader newResource;
             String command;
             //input stream
             DataInputStream input =
-                    new DataInputStream(clientSocket.getInputStream());
+                    new DataInputStream(client.getInputStream());
             //output stream
             DataOutputStream output =
-                    new DataOutputStream(clientSocket.getOutputStream());
+                    new DataOutputStream(client.getOutputStream());
 
             String jsonString;
-            if (input.available() != 0) {
-                jsonString = input.readUTF();
-                logger.fine("[RECEIVE] - " + jsonString);
-                if (JSONReader.isJSONValid(jsonString)) {
-                    //Read command from json.
-                    newResource = new JSONReader(jsonString);
-                    command = newResource.getCommand();
-                    switch (command) {
-                        case PUBLISH:
-                            //publish
-                            try {
-                                Common.checkNull(newResource);
-                                Publish.publish(newResource, db);
-                                JsonObject successMessage = new JsonObject();
-                                successMessage.addProperty("response", "success");
-                                logger.info("Successfully published resource.");
-                                logger.fine("[SENT] - " + successMessage.toString());
-                                output.writeUTF(successMessage.toString());
-                                output.flush();
-                            } catch (InvalidResourceException e1) {
-                                JsonObject errorMessage = new JsonObject();
-                                errorMessage.addProperty("response", "error");
-                                errorMessage.addProperty("errorMessage", "invalid resource");
-                                logger.warning("Resource to publish contained incorrect information that could not be recovered from.");
-                                logger.fine("[SENT] - " + errorMessage.toString());
-                                output.writeUTF(errorMessage.toString());
-                                output.flush();
-                            } catch (MissingComponentException e2) {
-                                logger.warning("missing resource");
-                                logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
-                                output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
-                                output.flush();
-                            }
-                            break;
-                        case REMOVE:
-                            //remove
-                            try {
-                                Common.checkNull(newResource);
-                                remove(newResource, db);
-                            } catch (MissingComponentException e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
-                            break;
-                        case SHARE:
-                            //share
-                            try {
-                                Common.checkNull(newResource);
-                                share(newResource, db, secret);
-                            } catch (InvalidResourceException e1) {
-                                JsonObject errorMessage = new JsonObject();
-                                errorMessage.addProperty("response", "error");
-                                errorMessage.addProperty("errorMessage", "invalid resource");
-                                logger.warning("Resource to share contained incorrect information that could not be recovered from.");
-                                output.writeUTF(errorMessage.toString());
-                                output.flush();
-                            } catch (MissingComponentException e2) {
-                                JsonObject errorMessage = new JsonObject();
-                                errorMessage.addProperty("response", "error");
-                                errorMessage.addProperty("errorMessage", "missing resource and/or secret");
-                                logger.warning("Share command missing resource or secret.");
-                                output.writeUTF(errorMessage.toString());
-                                output.flush();
-                            } catch (IncorrectSecretException e3) {
-                                JsonObject errorMessage = new JsonObject();
-                                errorMessage.addProperty("response", "error");
-                                errorMessage.addProperty("errorMessage", "incorrect secret");
-                                logger.warning("Share command used incorrect secret.");
-                                output.writeUTF(errorMessage.toString());
-                                output.flush();
-                            }
-                            break;
-                        case QUERY:
-                            try {
-                                Common.checkNull(newResource);
-                                Query.query(newResource,db);
-                            } catch (InvalidResourceException e1) {
-                                JsonObject errorMessage = new JsonObject();
-                                errorMessage.addProperty("response", "error");
-                                errorMessage.addProperty("errorMessage", "invalid resourceTemplate");
-                                logger.warning("Resource to share contained incorrect information that could not be recovered from.");
-                                output.writeUTF(errorMessage.toString());
-                                output.flush();
-                            } catch (MissingComponentException e2) {
-                                logger.warning("missing resourceTemplate");
-                                logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
-                                output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
-                                output.flush();
-                            }
-                            break;
-                        case FETCH:
-                            //fetch
-                            break;
-                        case EXCHANGE:
-                            //exchange
-                            break;
-                        default:
-                            JsonObject errorMessage = new JsonObject();
-                            errorMessage.addProperty("response", "error");
-                            if (command.isEmpty()) {
-                                logger.warning("missing command");
-                                errorMessage.addProperty("errorMessage", "missing or incorrect type for command");
-                                output.writeUTF(errorMessage.toString());
-                                output.flush();
-                            } else {
-                                logger.warning("invalid command");
-                                errorMessage.addProperty("errorMessage", "invalid command");
-                                output.writeUTF(errorMessage.toString());
-                                output.flush();
-                            }
-                            break;
-                    }
-                } else {
+            while(true){
+                if (input.available() > 0) {
+                    jsonString = input.readUTF();
                     logger.fine("[RECEIVE] - " + jsonString);
-                    logger.fine("[SENT] - " + "{\"response\":\"error, invalid string\"}");
-                    output.writeUTF("{\"response\":\"error, invalid string\"}");
-                    output.flush();
+                    if (JSONReader.isJSONValid(jsonString)) {
+                        //Read command from json.
+                        newResource = new JSONReader(jsonString);
+                        command = newResource.getCommand();
+                        switch (command) {
+                            case PUBLISH:
+                                //publish
+                                try {
+                                    Common.checkNull(newResource);
+                                    Publish.publish(newResource, db);
+                                    JsonObject successMessage = new JsonObject();
+                                    successMessage.addProperty("response", "success");
+                                    logger.info("Successfully published resource.");
+                                    logger.fine("[SENT] - " + successMessage.toString());
+                                    output.writeUTF(successMessage.toString());
+                                    output.flush();
+                                } catch (InvalidResourceException e1) {
+                                    JsonObject errorMessage = new JsonObject();
+                                    errorMessage.addProperty("response", "error");
+                                    errorMessage.addProperty("errorMessage", "invalid resource");
+                                    logger.warning("Resource to publish contained incorrect information that could not be recovered from.");
+                                    logger.fine("[SENT] - " + errorMessage.toString());
+                                    output.writeUTF(errorMessage.toString());
+                                    output.flush();
+                                } catch (MissingComponentException e2) {
+                                    logger.warning("missing resource");
+                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
+                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
+                                    output.flush();
+                                }
+                                break;
+                            case REMOVE:
+                                //remove
+                                try {
+                                    Common.checkNull(newResource);
+                                    remove(newResource, db);
+                                } catch (MissingComponentException e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+                                break;
+                            case SHARE:
+                                //share
+                                try {
+                                    Common.checkNull(newResource);
+                                    share(newResource, db, secret);
+                                } catch (InvalidResourceException e1) {
+                                    JsonObject errorMessage = new JsonObject();
+                                    errorMessage.addProperty("response", "error");
+                                    errorMessage.addProperty("errorMessage", "invalid resource");
+                                    logger.warning("Resource to share contained incorrect information that could not be recovered from.");
+                                    output.writeUTF(errorMessage.toString());
+                                    output.flush();
+                                } catch (MissingComponentException e2) {
+                                    JsonObject errorMessage = new JsonObject();
+                                    errorMessage.addProperty("response", "error");
+                                    errorMessage.addProperty("errorMessage", "missing resource and/or secret");
+                                    logger.warning("Share command missing resource or secret.");
+                                    output.writeUTF(errorMessage.toString());
+                                    output.flush();
+                                } catch (IncorrectSecretException e3) {
+                                    JsonObject errorMessage = new JsonObject();
+                                    errorMessage.addProperty("response", "error");
+                                    errorMessage.addProperty("errorMessage", "incorrect secret");
+                                    logger.warning("Share command used incorrect secret.");
+                                    output.writeUTF(errorMessage.toString());
+                                    output.flush();
+                                }
+                                break;
+                            case QUERY:
+                                try {
+                                    Common.checkNull(newResource);
+                                    Query.query(newResource,db);
+                                } catch (InvalidResourceException e1) {
+                                    JsonObject errorMessage = new JsonObject();
+                                    errorMessage.addProperty("response", "error");
+                                    errorMessage.addProperty("errorMessage", "invalid resourceTemplate");
+                                    logger.warning("Resource to share contained incorrect information that could not be recovered from.");
+                                    output.writeUTF(errorMessage.toString());
+                                    output.flush();
+                                } catch (MissingComponentException e2) {
+                                    logger.warning("missing resourceTemplate");
+                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
+                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
+                                    output.flush();
+                                }
+                                break;
+                            case FETCH:
+                                //fetch
+                                break;
+                            case EXCHANGE:
+                                //exchange
+                                break;
+                            default:
+                                JsonObject errorMessage = new JsonObject();
+                                errorMessage.addProperty("response", "error");
+                                if (command.isEmpty()) {
+                                    logger.warning("missing command");
+                                    errorMessage.addProperty("errorMessage", "missing or incorrect type for command");
+                                    output.writeUTF(errorMessage.toString());
+                                    output.flush();
+                                } else {
+                                    logger.warning("invalid command");
+                                    errorMessage.addProperty("errorMessage", "invalid command");
+                                    output.writeUTF(errorMessage.toString());
+                                    output.flush();
+                                }
+                                break;
+                        }
+                    } else {
+                        logger.fine("[RECEIVE] - " + jsonString);
+                        logger.fine("[SENT] - " + "{\"response\":\"error, invalid string\"}");
+                        output.writeUTF("{\"response\":\"error, invalid string\"}");
+                        output.flush();
+                    }
                 }
-            } else {
-                logger.warning("invalid request");
-                output.writeUTF("{\"response\":\"error, invalid request\"}");
-                output.flush();
             }
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, ex.getMessage());
