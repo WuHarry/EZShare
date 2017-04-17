@@ -1,10 +1,13 @@
 package EZShare;
 
 import JSON.JSONReader;
+import exceptions.InvalidResourceException;
 import exceptions.MissingComponentException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.logging.LogManager;
 
 /**
@@ -34,7 +37,7 @@ class Common {
      * @param s String to be checked.
      * @return True if s is valid, false otherwise.
      */
-    public static boolean validateString(String s) {
+    private static boolean validateString(String s) {
         return s.length() == 0 || !(s.contains("\0") || s.charAt(0) == ' ' || s.charAt(s.length() - 1) == ' ');
     }
 
@@ -50,8 +53,8 @@ class Common {
      * @param owner
      * @return
      */
-    public static boolean validateResource(String name, String desc, String[] tags, String uri,
-                                           String channel, String owner) {
+    static boolean validateResource(String name, String desc, String[] tags, String uri,
+                                    String channel, String owner) {
         if (!(validateString(name) && validateString(desc) && validateString(channel) &&
                 validateString(owner) && validateString(uri))) {
             //Error with resource
@@ -72,11 +75,29 @@ class Common {
      *             output Output to write to.
      * @throws MissingComponentException Thrown if curr does not contain full resource descriptor.
      */
-    public static void checkNull(JSONReader curr) throws MissingComponentException {
+    static void checkNull(JSONReader curr) throws MissingComponentException {
         if (curr.getResourceName() == null || curr.getResourceChannel() == null || curr.getResourceUri() == null ||
                 curr.getResourceDescription() == null || curr.getResourceOwner() == null || curr.getResourceTags() == null) {
             throw new MissingComponentException("Missing resource.");
         }
         // to be continued
+    }
+
+    /**
+     * The method to check whether the uri is valid if not throw Exceptions
+     *
+     * @param uri     the uri to test
+     * @param command the command the server is processing
+     * @throws InvalidResourceException If the resource supplied contains illegal fields, this is thrown.
+     */
+    static void validUri(String uri, String command) throws InvalidResourceException {
+        try {
+            URI path = new URI(uri);
+            if (!path.isAbsolute() || path.getScheme().equals("file")) {
+                throw new InvalidResourceException("Trying to " + command + " resource with non-absolute or file uri.");
+            }
+        } catch (URISyntaxException e) {
+            throw new InvalidResourceException("Attempting to " + command + " resource with invalid uri syntax.");
+        }
     }
 }

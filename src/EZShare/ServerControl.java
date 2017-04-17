@@ -81,11 +81,7 @@ class ServerControl {
                                     output.writeUTF(successMessage.toString());
                                     output.flush();
                                 } catch (InvalidResourceException e1) {
-                                    JsonObject errorMessage = new JsonObject();
-                                    errorMessage.addProperty("response", "error");
-                                    errorMessage.addProperty("errorMessage", "invalid resource");
-                                    logger.warning("Resource to publish contained incorrect information that could not be recovered from.");
-                                    logger.fine("[SENT] - " + errorMessage.toString());
+                                    JsonObject errorMessage = invalidResponse(PUBLISH);
                                     output.writeUTF(errorMessage.toString());
                                     output.flush();
                                 } catch (MissingComponentException e2) {
@@ -107,11 +103,7 @@ class ServerControl {
                                     output.writeUTF(successMessage.toString());
                                     output.flush();
                                 } catch (InvalidResourceException e) {
-                                	JsonObject errorMessage = new JsonObject();
-                                    errorMessage.addProperty("response", "error");
-                                    errorMessage.addProperty("errorMessage", "invalid resource");
-                                    logger.warning("Resource to publish contained incorrect information that could not be recovered from.");
-                                    logger.fine("[SENT] - " + errorMessage.toString());
+                                	JsonObject errorMessage = invalidResponse(REMOVE);
                                     output.writeUTF(errorMessage.toString());
                                     output.flush();
                                 }catch (MissingComponentException e2) {
@@ -127,10 +119,7 @@ class ServerControl {
                                     Common.checkNull(newResource);
                                     share(newResource, db, secret);
                                 } catch (InvalidResourceException e1) {
-                                    JsonObject errorMessage = new JsonObject();
-                                    errorMessage.addProperty("response", "error");
-                                    errorMessage.addProperty("errorMessage", "invalid resource");
-                                    logger.warning("Resource to share contained incorrect information that could not be recovered from.");
+                                    JsonObject errorMessage = invalidResponse(SHARE);
                                     output.writeUTF(errorMessage.toString());
                                     output.flush();
                                 } catch (MissingComponentException e2) {
@@ -157,7 +146,7 @@ class ServerControl {
                                     JsonObject errorMessage = new JsonObject();
                                     errorMessage.addProperty("response", "error");
                                     errorMessage.addProperty("errorMessage", "invalid resourceTemplate");
-                                    logger.warning("Resource to share contained incorrect information that could not be recovered from.");
+                                    logger.warning("Resource to query contained incorrect information that could not be recovered from.");
                                     output.writeUTF(errorMessage.toString());
                                     output.flush();
                                 } catch (MissingComponentException e2) {
@@ -202,8 +191,20 @@ class ServerControl {
         }
     }
 
-    //Probably need a method to check strings etc. are valid, haven't think clearly yet...
-    //or should we use a method to check if it is legal in this class and pass it to the new class to do the six functions?
+    /**
+     * The method to generate response to invalid request
+     *
+     * @param command the command that server received
+     * @return the error message json object
+     */
+    private static JsonObject invalidResponse(String command){
+        JsonObject errorMessage = new JsonObject();
+        errorMessage.addProperty("response", "error");
+        errorMessage.addProperty("errorMessage", "invalid resource");
+        logger.warning("Resource to " + command + " contained incorrect information that could not be recovered from.");
+        logger.fine("[SENT] - " + errorMessage.toString());
+        return errorMessage;
+    }
 
     /**
      * Validates then shares a resource with a file uri, inserting it into the database.

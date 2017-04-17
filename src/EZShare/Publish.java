@@ -35,14 +35,9 @@ class Publish {
         if (!Common.validateResource(name, description, tags, uri, channel, owner)) {
             throw new InvalidResourceException("Trying to publish Resource with illegal fields.");
         }
-        try {
-            URI path = new URI(uri);
-            if (!path.isAbsolute() || path.getScheme().equals("file")) {
-                throw new InvalidResourceException("Trying to publish resource with non-absolute or file uri.");
-            }
-        } catch (URISyntaxException e) {
-            throw new InvalidResourceException("Attempting to publish resource with invalid uri syntax.");
-        }
+
+        //valid uri
+        Common.validUri(uri, "publish");
 
         //Make sure matching primary key resources are removed.
         Resource match = db.pKeyLookup(channel, uri);
