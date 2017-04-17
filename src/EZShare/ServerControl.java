@@ -98,10 +98,26 @@ class ServerControl {
                                 //remove
                                 try {
                                     Common.checkNull(newResource);
-                                    remove(newResource, db);
-                                } catch (MissingComponentException e) {
-                                    // TODO Auto-generated catch block
-                                    e.printStackTrace();
+                                    Remove.remove(newResource, db);
+                                    JsonObject successMessage = new JsonObject();
+                                    successMessage.addProperty("response", "success");
+                                    logger.info("Successfully removed resource.");
+                                    logger.fine("[SENT] - " + successMessage.toString());
+                                    output.writeUTF(successMessage.toString());
+                                    output.flush();
+                                } catch (InvalidResourceException e) {
+                                	JsonObject errorMessage = new JsonObject();
+                                    errorMessage.addProperty("response", "error");
+                                    errorMessage.addProperty("errorMessage", "invalid resource");
+                                    logger.warning("Resource to publish contained incorrect information that could not be recovered from.");
+                                    logger.fine("[SENT] - " + errorMessage.toString());
+                                    output.writeUTF(errorMessage.toString());
+                                    output.flush();
+                                }catch (MissingComponentException e2) {
+                                    logger.warning("missing resource");
+                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
+                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
+                                    output.flush();
                                 }
                                 break;
                             case SHARE:
@@ -187,13 +203,6 @@ class ServerControl {
 
     //Probably need a method to check strings etc. are valid, haven't think clearly yet...
     //or should we use a method to check if it is legal in this class and pass it to the new class to do the six functions?
-
-
-    private static void remove(JSONReader resource, HashDatabase db) {
-        //Check strings etc. are valid
-
-        //Remove resource from database.
-    }
 
     /**
      * Validates then shares a resource with a file uri, inserting it into the database.
