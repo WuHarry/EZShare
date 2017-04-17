@@ -117,7 +117,7 @@ class ServerControl {
                                 //share
                                 try {
                                     Common.checkNull(newResource);
-                                    share(newResource, db, secret);
+                                    Share.share(newResource, db, secret);
                                 } catch (InvalidResourceException e1) {
                                     JsonObject errorMessage = invalidResponse(SHARE);
                                     output.writeUTF(errorMessage.toString());
@@ -127,6 +127,7 @@ class ServerControl {
                                     errorMessage.addProperty("response", "error");
                                     errorMessage.addProperty("errorMessage", "missing resource and/or secret");
                                     logger.warning("Share command missing resource or secret.");
+                                    logger.fine("[SENT] - " + errorMessage.toString());
                                     output.writeUTF(errorMessage.toString());
                                     output.flush();
                                 } catch (IncorrectSecretException e3) {
@@ -134,6 +135,7 @@ class ServerControl {
                                     errorMessage.addProperty("response", "error");
                                     errorMessage.addProperty("errorMessage", "incorrect secret");
                                     logger.warning("Share command used incorrect secret.");
+                                    logger.fine("[SENT] - " + errorMessage.toString());
                                     output.writeUTF(errorMessage.toString());
                                     output.flush();
                                 }
@@ -207,63 +209,5 @@ class ServerControl {
         return errorMessage;
     }
 
-    /**
-     * Validates then shares a resource with a file uri, inserting it into the database.
-     *
-     * @param resource The resource to be shared.
-     * @param db       Database to insert the resource into.
-     * @throws InvalidResourceException  If the resource contains incorrect information or invalid fields, this is thrown.
-     * @throws IncorrectSecretException  If the secret supplied does not match server secret, this is thrown.
-     * @throws MissingComponentException If secret is missing from command, this is thrown.
-     */
-    private static void share(JSONReader resource, HashDatabase db, String serverSecret) throws InvalidResourceException, IncorrectSecretException, MissingComponentException {
-        String name = resource.getResourceName();
-        String description = resource.getResourceDescription();
-        String channel = resource.getResourceChannel();
-        String owner = resource.getResourceOwner();
-        String uri = resource.getResourceUri();
-        String[] tags = resource.getResourceTags();
-        String ezserver = resource.getResourceEZserver();
-        String secret = resource.getSecret();
-
-        if (secret == null) {
-            //missing secret
-            throw new MissingComponentException();
-        }
-
-        //Check secret
-        if (!secret.equals(serverSecret)) {
-            //Incorrect secret, error.
-            throw new IncorrectSecretException();
-        }
-
-        //Validate strings
-        if (!Common.validateResource(name, description, tags, uri, channel, owner)) {
-            throw new InvalidResourceException("Trying to share Resource with illegal fields.");
-        }
-        //Validate uri
-        try {
-            URI path = new URI(uri);
-            if (!path.isAbsolute() || !path.getScheme().equals("file")) {
-                throw new InvalidResourceException("Trying to share resource with non-absolute or non-file uri.");
-            }
-            File f = new File(path);
-            if (!f.exists() || f.isDirectory()) {
-                throw new InvalidResourceException("File referenced by uri does not exist.");
-            }
-        } catch (URISyntaxException e) {
-            throw new InvalidResourceException("Attempting to share resource with invalid uri syntax.");
-        }
-
-        //Remove if match pKey in db
-        Resource match = db.pKeyLookup(channel, uri);
-        if (match != null) {
-            db.deleteResource(match);
-        }
-
-        //Add to db
-        db.insertResource(new Resource(name, description, Arrays.asList(tags),
-                uri, channel, owner, ezserver));
-    }
 
 }
