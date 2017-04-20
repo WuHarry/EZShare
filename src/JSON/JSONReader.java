@@ -1,5 +1,9 @@
 package JSON;
 
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gson.*;
 
 /**
@@ -166,13 +170,15 @@ public class JSONReader {
      * The second index would contains the second
      * @return the serverlist String Array with has two dimensions
      */
-    public String[][] getServerList() {
-        String[][] serverList = new String[2][2];
+    public List<InetSocketAddress> getServerList() {
+        List<InetSocketAddress> serverList = new ArrayList<InetSocketAddress>();
         JsonArray list = object.get("serverList").getAsJsonArray();
         for (int i = 0; i < list.size(); i++) {
             JsonObject host = list.get(i).getAsJsonObject();
-            serverList[i][0] = host.get("hostname").getAsString();
-            serverList[i][1] = host.get("port").getAsString();
+            String hostName = host.get("hostname").getAsString();
+            int port = host.get("port").getAsInt();
+            InetSocketAddress server = new InetSocketAddress(hostName, port);
+            serverList.add(server);
         }
         return serverList;
     }

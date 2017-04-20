@@ -5,6 +5,7 @@ import Resource.HashDatabase;
 import exceptions.IncorrectSecretException;
 import exceptions.InvalidResourceException;
 import exceptions.MissingComponentException;
+import exceptions.NonExistentResourceException;
 
 import com.google.gson.JsonObject;
 
@@ -105,6 +106,11 @@ class ServerControl {
                                     logger.warning("missing resource");
                                     logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
                                     output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
+                                    output.flush();
+                                }catch (NonExistentResourceException e3){
+                                	logger.warning("tried to remove resource which didn't exist");
+                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"cannot remove resource\"}");
+                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"cannot remove resource\"}");
                                     output.flush();
                                 }
                                 break;

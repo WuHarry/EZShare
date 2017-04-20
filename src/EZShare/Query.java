@@ -5,7 +5,9 @@ import Resource.HashDatabase;
 import Resource.Resource;
 import exceptions.InvalidResourceException;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Created by Yahang Wu on 2017/4/16.
@@ -22,13 +24,16 @@ public class Query {
         String uri = resource.getResourceUri();
         String[] tags = resource.getResourceTags();
         String ezserver = resource.getResourceEZserver();
-
-        HashSet<Resource> resources = new HashSet<Resource>();
+        boolean relay = resource.getRelay();
+        
+        List<Resource> resources = new ArrayList<Resource>();
 
         //Check strings etc. are valid
         if (!Common.validateResource(name, description, tags, uri, channel, owner)) {
             throw new InvalidResourceException("Trying to query Resource with illegal fields.");
         }
+        
+        
         
     }
 }

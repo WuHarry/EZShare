@@ -11,7 +11,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * A synchronized database which allows lookup of resources based on their template,
  * by multiple threads simultaneously.
- * <p>
  * Created by Ryan Naughton 15/04/2017
  */
 
@@ -53,6 +52,7 @@ public class HashDatabase {
      * otherwise.
      *
      * @param channel The channel of the resource to search for.
+     * @param owner The owner of the resource to search for.
      * @param uri     The uri of the resource.
      * @return Resource which matches the key or null if none found.
      */
