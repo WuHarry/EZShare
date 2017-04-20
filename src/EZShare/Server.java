@@ -5,7 +5,10 @@ import Connection.Connection;
 import javax.net.ServerSocketFactory;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,12 +52,15 @@ public class Server {
             logger.info("bound to port " + port);
             logger.info("started");
 
+            List<InetSocketAddress> serverList = new ArrayList<InetSocketAddress>();
+            List<InetSocketAddress> servers = java.util.Collections.synchronizedList(serverList);
+            
             while (true) {
                 Socket client = server.accept();
                 counter++;
 
                 // Start a new thread for a connection
-                Thread t = new Thread(() -> ServerControl.serverClient(client, connection.serverSecret));
+                Thread t = new Thread(() -> ServerControl.serverClient(client, connection.serverSecret, servers));
                 t.start();
             }
 

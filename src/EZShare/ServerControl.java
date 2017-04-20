@@ -4,6 +4,7 @@ import JSON.JSONReader;
 import Resource.HashDatabase;
 import exceptions.IncorrectSecretException;
 import exceptions.InvalidResourceException;
+import exceptions.InvalidServerException;
 import exceptions.MissingComponentException;
 import exceptions.NonExistentResourceException;
 
@@ -12,7 +13,9 @@ import com.google.gson.JsonObject;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,8 +46,9 @@ class ServerControl {
      *
      * @param client the socket client which is trying to connect to the server
      * @param secret the server's secret
+     * @param servers List of servers the original server currently knows about
      */
-    static void serverClient(Socket client, String secret) {
+    static void serverClient(Socket client, String secret, List<InetSocketAddress> servers) {
         try (Socket clientSocket = client) {
             JSONReader newResource;
             String command;
@@ -163,7 +167,25 @@ class ServerControl {
                                 //fetch
                                 break;
                             case EXCHANGE:
-                                //exchange
+                                try{
+                                	Exchange.exchange(newResource, db, servers);
+                                    JsonObject successMessage = new JsonObject();
+                                    successMessage.addProperty("response", "success");
+                                    logger.info("Successfully exchanged server list.");
+                                    logger.fine("[SENT] - " + successMessage.toString());
+                                    output.writeUTF(successMessage.toString());
+                                    output.flush();
+                                }catch(MissingComponentException e1){
+                                	logger.warning("missing serverList");
+                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing or invalid server list\"}");
+                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing or invalid server list\"}");
+                                    output.flush();
+                                }catch(InvalidServerException e2){
+                                	logger.warning("invalid entry in server list");
+                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
+                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
+                                    output.flush();
+                                }
                                 break;
                             default:
                                 JsonObject errorMessage = new JsonObject();

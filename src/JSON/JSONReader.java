@@ -6,6 +6,8 @@ import java.util.List;
 
 import com.google.gson.*;
 
+import exceptions.InvalidServerException;
+
 /**
  * Created by Yahang Wu on 2017/3/31.
  * COMP90015 Distributed System Project1 EZServer
@@ -169,16 +171,22 @@ public class JSONReader {
      * The first index of the array would contains the first hostname and port
      * The second index would contains the second
      * @return the serverlist String Array with has two dimensions
+     * @throws InvalidServerException 
      */
-    public List<InetSocketAddress> getServerList() {
+    public List<InetSocketAddress> getServerList() throws InvalidServerException {
         List<InetSocketAddress> serverList = new ArrayList<InetSocketAddress>();
         JsonArray list = object.get("serverList").getAsJsonArray();
-        for (int i = 0; i < list.size(); i++) {
-            JsonObject host = list.get(i).getAsJsonObject();
-            String hostName = host.get("hostname").getAsString();
-            int port = host.get("port").getAsInt();
-            InetSocketAddress server = new InetSocketAddress(hostName, port);
-            serverList.add(server);
+        try{
+        	for (int i = 0; i < list.size(); i++) {
+                JsonObject host = list.get(i).getAsJsonObject();
+                String hostName = host.get("hostname").getAsString();
+                int port = host.get("port").getAsInt();
+                InetSocketAddress server = new InetSocketAddress(hostName, port);
+                serverList.add(server);
+            }
+        }catch(IllegalArgumentException e){
+        	//Thrown if port number invalid (if hostname invalid will be unresolved, should check).
+        	throw new InvalidServerException("Server entry in serverList has invalid port number.");
         }
         return serverList;
     }
