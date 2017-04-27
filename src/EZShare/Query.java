@@ -16,6 +16,14 @@ import java.util.Set;
  */
 class Query {
 
+    /**
+     * The query function of the server
+     *
+     * @param resource The resources should be queried.
+     * @param db The database the resource should be checked.
+     * @return return all the resources that match the request
+     * @throws InvalidResourceException If the resource supplied contains illegal fields, this is thrown.
+     */
     static Set<Resource> query(JSONReader resource, HashDatabase db) throws InvalidResourceException {
         String name = resource.getResourceName();
         String description = resource.getResourceDescription();
@@ -102,6 +110,11 @@ class Query {
         return null;
     }
 
+    /**
+     * The method to hide owner, if the owner is not ""
+     *
+     * @param resources the response resources
+     */
     private static void hideOwner(Set<Resource> resources) {
         for (Resource r : resources) {
             if (!r.getOwner().equals("")) r.setOwner("*");

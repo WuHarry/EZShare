@@ -46,8 +46,8 @@ class ServerControl {
     /**
      * The method to read the clients' requests and send responses
      *
-     * @param client the socket client which is trying to connect to the server
-     * @param secret the server's secret
+     * @param client  the socket client which is trying to connect to the server
+     * @param secret  the server's secret
      * @param servers List of servers the original server currently knows about
      */
     static void serverClient(Socket client, String secret, List<InetSocketAddress> servers) {
@@ -105,16 +105,16 @@ class ServerControl {
                                     output.writeUTF(successMessage.toString());
                                     output.flush();
                                 } catch (InvalidResourceException e) {
-                                	JsonObject errorMessage = invalidResponse(REMOVE);
+                                    JsonObject errorMessage = invalidResponse(REMOVE);
                                     output.writeUTF(errorMessage.toString());
                                     output.flush();
-                                }catch (MissingComponentException e2) {
+                                } catch (MissingComponentException e2) {
                                     logger.warning("missing resource");
                                     logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
                                     output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
                                     output.flush();
-                                }catch (NonExistentResourceException e3){
-                                	logger.warning("tried to remove resource which didn't exist");
+                                } catch (NonExistentResourceException e3) {
+                                    logger.warning("tried to remove resource which didn't exist");
                                     logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"cannot remove resource\"}");
                                     output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"cannot remove resource\"}");
                                     output.flush();
@@ -151,24 +151,24 @@ class ServerControl {
                                 try {
                                     Common.checkNull(newResource);
                                     Set<Resource> resources = Query.query(newResource, db);
-                                    if (resources == null){
+                                    if (resources == null) {
                                         output.writeUTF("{\"response\":\"success\"}");
                                         logger.fine("[SENT] - " + "{\"response\":\"success\"}");
                                         output.flush();
-                                        output.writeUTF("{\"resultSize\":" + 0 +"}");
-                                        logger.fine("[SENT] - " + "{\"resultSize\":" + 0 +"}");
+                                        output.writeUTF("{\"resultSize\":" + 0 + "}");
+                                        logger.fine("[SENT] - " + "{\"resultSize\":" + 0 + "}");
                                         output.flush();
-                                    }else{
+                                    } else {
                                         output.writeUTF("{\"response\":\"success\"}");
                                         logger.fine("[SENT] - " + "{\"response\":\"success\"}");
                                         output.flush();
-                                        for(Resource r :resources){
+                                        for (Resource r : resources) {
                                             output.writeUTF(r.toJsonObject().toString());
                                             logger.fine("[SENT] - " + r.toJsonObject().toString());
                                             output.flush();
                                         }
-                                        output.writeUTF("{\"resultSize\":" + resources.size() +"}");
-                                        logger.fine("[SENT] - " + "{\"resultSize\":" + resources.size() +"}");
+                                        output.writeUTF("{\"resultSize\":" + resources.size() + "}");
+                                        logger.fine("[SENT] - " + "{\"resultSize\":" + resources.size() + "}");
                                         output.flush();
                                     }
                                 } catch (InvalidResourceException e1) {
@@ -189,21 +189,21 @@ class ServerControl {
                                 //fetch
                                 break;
                             case EXCHANGE:
-                                try{
-                                	Exchange.exchange(newResource, db, servers);
+                                try {
+                                    Exchange.exchange(newResource, db, servers);
                                     JsonObject successMessage = new JsonObject();
                                     successMessage.addProperty("response", "success");
                                     logger.info("Successfully exchanged server list.");
                                     logger.fine("[SENT] - " + successMessage.toString());
                                     output.writeUTF(successMessage.toString());
                                     output.flush();
-                                }catch(MissingComponentException e1){
-                                	logger.warning("missing serverList");
+                                } catch (MissingComponentException e1) {
+                                    logger.warning("missing serverList");
                                     logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing or invalid server list\"}");
                                     output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing or invalid server list\"}");
                                     output.flush();
-                                }catch(InvalidServerException e2){
-                                	logger.warning("invalid entry in server list");
+                                } catch (InvalidServerException e2) {
+                                    logger.warning("invalid entry in server list");
                                     logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
                                     output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
                                     output.flush();
@@ -245,7 +245,7 @@ class ServerControl {
      * @param command the command that server received
      * @return the error message json object
      */
-    private static JsonObject invalidResponse(String command){
+    private static JsonObject invalidResponse(String command) {
         JsonObject errorMessage = new JsonObject();
         errorMessage.addProperty("response", "error");
         errorMessage.addProperty("errorMessage", "invalid resource");
