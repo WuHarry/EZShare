@@ -31,7 +31,6 @@ class Query {
         String owner = resource.getResourceOwner();
         String uri = resource.getResourceUri();
         String[] tags = resource.getResourceTags();
-        String ezserver = resource.getResourceEZserver();
         boolean relay = resource.getRelay();
 
         Set<Resource> resources = new HashSet<Resource>();

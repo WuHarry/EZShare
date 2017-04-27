@@ -3,6 +3,7 @@ package EZShare;
 import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
+import com.sun.org.apache.regexp.internal.RE;
 import exceptions.IncorrectSecretException;
 import exceptions.InvalidResourceException;
 import exceptions.InvalidServerException;
@@ -11,11 +12,10 @@ import exceptions.NonExistentResourceException;
 
 import com.google.gson.JsonObject;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -172,10 +172,7 @@ class ServerControl {
                                         output.flush();
                                     }
                                 } catch (InvalidResourceException e1) {
-                                    JsonObject errorMessage = new JsonObject();
-                                    errorMessage.addProperty("response", "error");
-                                    errorMessage.addProperty("errorMessage", "invalid resourceTemplate");
-                                    logger.warning("Resource to query contained incorrect information that could not be recovered from.");
+                                    JsonObject errorMessage = invalidResponse(QUERY);
                                     output.writeUTF(errorMessage.toString());
                                     output.flush();
                                 } catch (MissingComponentException e2) {
@@ -186,7 +183,17 @@ class ServerControl {
                                 }
                                 break;
                             case FETCH:
-                                //fetch
+                                try{
+                                    Common.checkNull(newResource);
+                                    Resource resource = Fetch.fetch(newResource,db);
+                                    uploadResources(resource,output);
+                                }catch (InvalidResourceException e1) {
+                                    JsonObject errorMessage = invalidResponse(FETCH);
+                                    output.writeUTF(errorMessage.toString());
+                                    output.flush();
+                                }catch (MissingComponentException e2){
+
+                                }
                                 break;
                             case EXCHANGE:
                                 try {
@@ -246,11 +253,54 @@ class ServerControl {
      * @return the error message json object
      */
     private static JsonObject invalidResponse(String command) {
+
         JsonObject errorMessage = new JsonObject();
         errorMessage.addProperty("response", "error");
-        errorMessage.addProperty("errorMessage", "invalid resource");
+        if(command.equals(PUBLISH) || command.equals(REMOVE)
+                || command.equals(SHARE)){
+            errorMessage.addProperty("errorMessage", "invalid resource");
+        }else if (command.equals(QUERY) || command.equals(FETCH)){
+            errorMessage.addProperty("errorMessage", "invalid resourceTemplate");
+        }
         logger.warning("Resource to " + command + " contained incorrect information that could not be recovered from.");
         logger.fine("[SENT] - " + errorMessage.toString());
         return errorMessage;
+    }
+
+    /**
+     * The method to provide the function to upload files to the client
+     *
+     * @param resource the resource that client requested
+     * @param output the output stream to the client
+     */
+    private static void uploadResources(Resource resource, DataOutputStream output){
+
+        String filePath = resource.getUri();
+        File f = new File(filePath);
+        if(f.exists()){
+            try{
+                output.writeUTF("{\"response\":\"success\"}");
+                logger.fine("[SENT] - " + "{\"response\":\"success\"}");
+
+                JsonObject trigger = resource.toJsonObject();
+                trigger.addProperty("resourceSize", f.length());
+                //Sending trigger to the client
+                output.writeUTF(trigger.toString());
+                logger.fine("[SENT] - " + trigger.toString());
+
+                // Start sending file
+                RandomAccessFile byteFile = new RandomAccessFile(f,"r");
+                byte[] sendingBuffer = new byte[1024*1024];
+                int num;
+                // While there are still bytes to send..
+                while((num = byteFile.read(sendingBuffer)) > 0){
+                    output.write(Arrays.copyOf(sendingBuffer, num));
+                    logger.fine("[SENT] - " + num);
+                }
+                byteFile.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
