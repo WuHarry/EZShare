@@ -2,6 +2,7 @@ package EZShare;
 
 import JSON.JSONReader;
 import Resource.HashDatabase;
+import Resource.Resource;
 import exceptions.IncorrectSecretException;
 import exceptions.InvalidResourceException;
 import exceptions.InvalidServerException;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -148,7 +150,27 @@ class ServerControl {
                             case QUERY:
                                 try {
                                     Common.checkNull(newResource);
-                                    Query.query(newResource, db);
+                                    Set<Resource> resources = Query.query(newResource, db);
+                                    if (resources == null){
+                                        output.writeUTF("{\"response\":\"success\"}");
+                                        logger.fine("[SENT] - " + "{\"response\":\"success\"}");
+                                        output.flush();
+                                        output.writeUTF("{\"resultSize\":" + 0 +"}");
+                                        logger.fine("[SENT] - " + "{\"resultSize\":" + 0 +"}");
+                                        output.flush();
+                                    }else{
+                                        output.writeUTF("{\"response\":\"success\"}");
+                                        logger.fine("[SENT] - " + "{\"response\":\"success\"}");
+                                        output.flush();
+                                        for(Resource r :resources){
+                                            output.writeUTF(r.toJsonObject().toString());
+                                            logger.fine("[SENT] - " + r.toJsonObject().toString());
+                                            output.flush();
+                                        }
+                                        output.writeUTF("{\"resultSize\":" + resources.size() +"}");
+                                        logger.fine("[SENT] - " + "{\"resultSize\":" + resources.size() +"}");
+                                        output.flush();
+                                    }
                                 } catch (InvalidResourceException e1) {
                                     JsonObject errorMessage = new JsonObject();
                                     errorMessage.addProperty("response", "error");

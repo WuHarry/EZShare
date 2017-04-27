@@ -1,5 +1,9 @@
 package Resource;
 
+import JSON.JSONReader;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import java.util.List;
 
 /**
@@ -61,4 +65,24 @@ public class Resource {
         return ezserver;
     }
 
+    public void setOwner(String owner){this.owner = owner;}
+
+    public JsonObject toJsonObject(){
+
+        JsonObject resourceJson = new JsonObject();
+        JsonArray tagsArray = new JsonArray();
+
+        for(String s : tags){
+            tagsArray.add(s);
+        }
+        resourceJson.addProperty("name", name);
+        resourceJson.add("tags", tagsArray);
+        resourceJson.addProperty("description", description);
+        resourceJson.addProperty("uri", uri);
+        resourceJson.addProperty("channel", channel);
+        resourceJson.addProperty("owner", owner);
+        resourceJson.addProperty("ezserver", ezserver);
+
+        return resourceJson;
+    }
 }

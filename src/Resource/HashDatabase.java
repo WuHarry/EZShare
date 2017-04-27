@@ -1,5 +1,8 @@
 package Resource;
 
+import Connection.Connection;
+import EZShare.Server;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -45,6 +48,9 @@ public class HashDatabase {
     public HashDatabase() {
         lock = new ReentrantReadWriteLock();
         this.db = new HashMap<String, ChannelDB>();
+        List<String> tags = new ArrayList<String>();
+        String ezserver = Connection.hostName + ":" + Server.port;
+        insertResource(new Resource("", "", tags, "", "", "", ezserver));
     }
 
     /**
@@ -52,7 +58,6 @@ public class HashDatabase {
      * otherwise.
      *
      * @param channel The channel of the resource to search for.
-     * @param owner The owner of the resource to search for.
      * @param uri     The uri of the resource.
      * @return Resource which matches the key or null if none found.
      */

@@ -61,12 +61,13 @@ public class Client {
             //output stream
             DataOutputStream output =
                     new DataOutputStream(socket.getOutputStream());
-            if (Connection.debugSwitch) {
-                logger.info("Debug mode on");
-                logger.fine("[SENT] - " + commandJsonString);
-            }
+
             if (commandJsonString != null) {
                 output.writeUTF(commandJsonString);
+                if (Connection.debugSwitch) {
+                    logger.info("Debug mode on");
+                    logger.fine("[SENT] - " + commandJsonString);
+                }
                 output.flush();
             }
 
