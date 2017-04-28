@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
  * COMP90015 Distributed System Project1 EZServer
  * The fetch function of the server
  */
-public class Fetch {
+class Fetch {
 
     static Resource fetch(JSONReader resource, HashDatabase db) throws InvalidResourceException {
 
