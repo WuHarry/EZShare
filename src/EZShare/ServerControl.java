@@ -297,6 +297,10 @@ class ServerControl {
                     output.write(Arrays.copyOf(sendingBuffer, num));
                     logger.fine("[SENT] - " + num);
                 }
+                output.flush();
+                output.writeUTF("{\"resultSize\":1}");
+                logger.fine("[SENT] - {\"resultSize\":1}");
+                output.flush();
                 byteFile.close();
             } catch (IOException e) {
                 e.printStackTrace();
