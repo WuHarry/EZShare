@@ -4,6 +4,7 @@ import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
 import exceptions.InvalidResourceException;
+import exceptions.MissingComponentException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,7 +16,7 @@ import java.net.URISyntaxException;
  */
 class Fetch {
 
-    static Resource fetch(JSONReader resource, HashDatabase db) throws InvalidResourceException {
+    static Resource fetch(JSONReader resource, HashDatabase db) throws InvalidResourceException, MissingComponentException {
 
         String name = resource.getResourceName();
         String description = resource.getResourceDescription();
@@ -31,6 +32,9 @@ class Fetch {
 
         try {
             URI path = new URI(uri);
+            if(path.toString().equals("")){
+                throw new MissingComponentException("Missing uri");
+            }
             if (!path.isAbsolute() && !path.getScheme().equals("file")) {
                 throw new InvalidResourceException("Trying to download resource with non-absolute or non-file uri.");
             }
