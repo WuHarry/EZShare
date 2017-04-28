@@ -17,7 +17,6 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -83,14 +82,9 @@ class ServerControl {
                                     output.writeUTF(successMessage.toString());
                                     output.flush();
                                 } catch (InvalidResourceException e1) {
-                                    JsonObject errorMessage = invalidResponse(PUBLISH);
-                                    output.writeUTF(errorMessage.toString());
-                                    output.flush();
+                                    invalidResource(PUBLISH, output);
                                 } catch (MissingComponentException e2) {
-                                    logger.warning("missing resource");
-                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
-                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
-                                    output.flush();
+                                    missingResources(PUBLISH,output);
                                 }
                                 break;
                             case REMOVE:
@@ -105,14 +99,9 @@ class ServerControl {
                                     output.writeUTF(successMessage.toString());
                                     output.flush();
                                 } catch (InvalidResourceException e) {
-                                    JsonObject errorMessage = invalidResponse(REMOVE);
-                                    output.writeUTF(errorMessage.toString());
-                                    output.flush();
+                                    invalidResource(REMOVE, output);
                                 } catch (MissingComponentException e2) {
-                                    logger.warning("missing resource");
-                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
-                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
-                                    output.flush();
+                                    missingResources(REMOVE,output);
                                 } catch (NonExistentResourceException e3) {
                                     logger.warning("tried to remove resource which didn't exist");
                                     logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"cannot remove resource\"}");
@@ -132,9 +121,7 @@ class ServerControl {
                                     output.writeUTF(successMessage.toString());
                                     output.flush();
                                 } catch (InvalidResourceException e1) {
-                                    JsonObject errorMessage = invalidResponse(SHARE);
-                                    output.writeUTF(errorMessage.toString());
-                                    output.flush();
+                                    invalidResource(SHARE, output);
                                 } catch (MissingComponentException e2) {
                                     JsonObject errorMessage = new JsonObject();
                                     errorMessage.addProperty("response", "error");
@@ -178,14 +165,9 @@ class ServerControl {
                                         output.flush();
                                     }
                                 } catch (InvalidResourceException e1) {
-                                    JsonObject errorMessage = invalidResponse(QUERY);
-                                    output.writeUTF(errorMessage.toString());
-                                    output.flush();
+                                    invalidResource(QUERY, output);
                                 } catch (MissingComponentException e2) {
-                                    logger.warning("missing resourceTemplate");
-                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
-                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
-                                    output.flush();
+                                    missingResources(QUERY, output);
                                 }
                                 break;
                             case FETCH:
@@ -194,11 +176,9 @@ class ServerControl {
                                     Resource resource = Fetch.fetch(newResource, db);
                                     uploadResources(resource, output);
                                 } catch (InvalidResourceException e1) {
-                                    JsonObject errorMessage = invalidResponse(FETCH);
-                                    output.writeUTF(errorMessage.toString());
-                                    output.flush();
+                                    invalidResource(FETCH, output);
                                 } catch (MissingComponentException e2) {
-
+                                    missingResources(FETCH, output);
                                 }
                                 break;
                             case EXCHANGE:
@@ -248,7 +228,7 @@ class ServerControl {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, ex.getMessage());
+            logger.warning(ex.getMessage());
         }
     }
 
@@ -256,9 +236,8 @@ class ServerControl {
      * The method to generate response to invalid request
      *
      * @param command the command that server received
-     * @return the error message json object
      */
-    private static JsonObject invalidResponse(String command) {
+    private static void invalidResource(String command, DataOutputStream output) {
 
         JsonObject errorMessage = new JsonObject();
         errorMessage.addProperty("response", "error");
@@ -268,9 +247,33 @@ class ServerControl {
         } else if (command.equals(QUERY) || command.equals(FETCH)) {
             errorMessage.addProperty("errorMessage", "invalid resourceTemplate");
         }
-        logger.warning("Resource to " + command + " contained incorrect information that could not be recovered from.");
-        logger.fine("[SENT] - " + errorMessage.toString());
-        return errorMessage;
+        try {
+            logger.warning("Resource to " + command + " contained incorrect information that could not be recovered from.");
+            output.writeUTF(errorMessage.toString());
+            logger.fine("[SENT] - " + errorMessage.toString());
+            output.flush();
+        } catch (IOException e) {
+            logger.warning(e.getMessage());
+        }
+    }
+
+    private static void missingResources(String command, DataOutputStream output) {
+
+        try{
+            if(command.equals(PUBLISH) || command.equals(REMOVE)){
+                logger.warning("missing resource");
+                output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
+                logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
+                output.flush();
+            } else if (command.equals(FETCH) || command.equals(QUERY)){
+                logger.warning("missing resourceTemplate");
+                output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
+                logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
+                output.flush();
+            }
+        } catch (IOException e) {
+            logger.warning(e.getMessage());
+        }
     }
 
     /**
