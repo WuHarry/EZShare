@@ -1,5 +1,6 @@
 package EZShare;
 
+import Connection.Connection;
 import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
@@ -35,7 +36,7 @@ class Share {
         String owner = resource.getResourceOwner();
         String uri = resource.getResourceUri();
         String[] tags = resource.getResourceTags();
-        String ezserver = resource.getResourceEZserver();
+        String ezserver = Connection.hostName + ":" + Server.port;
         String secret = resource.getSecret();
 
         if (secret == null) {

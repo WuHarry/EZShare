@@ -125,6 +125,12 @@ class ServerControl {
                                 try {
                                     Common.checkNull(newResource);
                                     Share.share(newResource, db, secret);
+                                    JsonObject successMessage = new JsonObject();
+                                    successMessage.addProperty("response", "success");
+                                    logger.info("Successfully shared resource.");
+                                    logger.fine("[SENT] - " + successMessage.toString());
+                                    output.writeUTF(successMessage.toString());
+                                    output.flush();
                                 } catch (InvalidResourceException e1) {
                                     JsonObject errorMessage = invalidResponse(SHARE);
                                     output.writeUTF(errorMessage.toString());
