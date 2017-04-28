@@ -50,12 +50,10 @@ public class Exchange {
         while (true) {
             try {
                 Thread.sleep(exchangeInterval);
-                System.out.println("success");
                 if (!servers.isEmpty()) {
                     //pick the random server to exchange
                     int serverToShare = (int) (Math.random() * servers.size());
                     String serverIP = servers.get(serverToShare).getAddress().getHostName();
-                    System.out.println(servers.size());
                     int serverPort = servers.get(serverToShare).getPort();
                     try (Socket socket = new Socket(serverIP, serverPort)) {
                         //input stream
