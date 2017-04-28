@@ -204,6 +204,13 @@ public class JSONReader {
         return serverList;
     }
 
+    /**
+     * The method to convert the server list to JsonObject
+     *
+     * @param servers the server list
+     * @param serverToShare the picked server to exchange server list
+     * @return the server list exclude the server which is going to share with
+     */
     public static JsonObject generateServerList(List<InetSocketAddress> servers, int serverToShare) {
 
         JsonArray serverList = new JsonArray();

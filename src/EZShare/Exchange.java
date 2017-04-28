@@ -18,6 +18,15 @@ class Exchange {
 
     private static Logger logger = Logger.getLogger(Exchange.class.getName());
 
+    /**
+     * The exchange function of the server to receive serverList and add the
+     * non-exist serverList to the server's list
+     *
+     * @param resource the command resource that client sent to the server
+     * @param servers the server's list of servers
+     * @throws MissingComponentException throws when the serverList received is null
+     * @throws InvalidServerException throws when the serverList contains unresolved server
+     */
     static void exchange(JSONReader resource, List<InetSocketAddress> servers) throws MissingComponentException, InvalidServerException {
 
         //To conform with other command structure, move outside to Common method
@@ -42,6 +51,14 @@ class Exchange {
         }
     }
 
+    /**
+     * The function to exchange serverList between servers, pick a random server
+     * to exchange serverList. The method packed all the server to a JsonObject
+     * and send the server list as a Json String
+     *
+     * @param exchangeInterval the exchange time period
+     * @param servers the server's list
+     */
     static void serverExchange(int exchangeInterval, List<InetSocketAddress> servers) {
 
         while (true) {
