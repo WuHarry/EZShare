@@ -68,7 +68,7 @@ public class Server {
                 t.start();
             }
         } catch (IOException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, ex.getMessage());
+            logger.warning(ex.getMessage());
         }
     }
 }

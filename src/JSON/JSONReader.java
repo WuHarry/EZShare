@@ -71,54 +71,60 @@ public class JSONReader {
     /**
      * The method to return the resource included in the complete jsonObject
      *
-     * @return the resource JsonObject
+     * @return the resource JsonObject, if it is null, return null
      */
     public JsonObject getResources() {
+        if (resource == null) return null;
         return resource;
     }
 
     /**
      * The method to return the resource name
      *
-     * @return the resource name string
+     * @return the resource name string, if it is null, return null
      */
     public String getResourceName() {
+        if (resource.get("name").isJsonNull()) return null;
         return resource.get("name").getAsString();
     }
 
     /**
      * The method to return the resource description
      *
-     * @return the resource description string
+     * @return the resource description string, if it is null, return null
      */
     public String getResourceDescription() {
+        if (resource.get("description").isJsonNull()) return null;
         return resource.get("description").getAsString();
     }
 
     /**
      * The method to return the resource uri
      *
-     * @return the resource uri string
+     * @return the resource uri string, if it is null, return null
      */
     public String getResourceUri() {
+        if (resource.get("uri").isJsonNull()) return null;
         return resource.get("uri").getAsString();
     }
 
     /**
      * The method to return the resource channel
      *
-     * @return the resource channel string
+     * @return the resource channel string, if it is null, return null
      */
     public String getResourceChannel() {
+        if (resource.get("channel").isJsonNull()) return null;
         return resource.get("channel").getAsString();
     }
 
     /**
      * The method to return the resource owner
      *
-     * @return the resource owner string
+     * @return the resource owner string, if it is null, return null
      */
     public String getResourceOwner() {
+        if (resource.get("owner").isJsonNull()) return null;
         return resource.get("owner").getAsString();
     }
 
@@ -139,10 +145,11 @@ public class JSONReader {
     /**
      * The method to return the resource tags
      *
-     * @return the resource tags string array
+     * @return the resource tags string array, if it is null, return null
      */
     public String[] getResourceTags() {
         JsonArray array = resource.getAsJsonArray("tags");
+        if (array.isJsonNull()) return null;
         String[] tags = new String[array.size()];
 
         for (int i = 0; i < array.size(); i++) {
@@ -154,27 +161,30 @@ public class JSONReader {
     /**
      * The method to return the resource secret
      *
-     * @return the secret string
+     * @return the secret string, if it is null, return null
      */
     public String getSecret() {
+        if (object.get("secret").isJsonNull()) return null;
         return object.get("secret").getAsString();
     }
 
     /**
      * The method to return the resource relay
      *
-     * @return the relay's value, true of false
+     * @return the relay's value, true of false, if it is null, return null
      */
     public Boolean getRelay() {
+        if (object.get("relay").isJsonNull()) return null;
         return object.get("relay").getAsBoolean();
     }
 
     /**
      * The method to return the resourceTemplate
      *
-     * @return the resourceTemplate JsonObject
+     * @return the resourceTemplate JsonObject, if it is null, return null
      */
     public JsonObject getResourceTemplate() {
+        if (object.get("resourceTemplate").isJsonNull()) return null;
         return object.get("resourceTemplate").getAsJsonObject();
     }
 
