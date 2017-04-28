@@ -24,8 +24,7 @@ public class Server {
 
     public static int port = 4000;
     private static int counter = 0;
-    private static Logger logger = Logger.getLogger(
-            Server.class.getName());
+    private static Logger logger = Logger.getLogger(Server.class.getName());
 
     /**
      * The main function of the server
@@ -44,6 +43,14 @@ public class Server {
         //change port
         port = connection.serverPort;
 
+        //store server list
+        List<InetSocketAddress> serverList = new ArrayList<InetSocketAddress>();
+        List<InetSocketAddress> servers = java.util.Collections.synchronizedList(serverList);
+
+        //Start a thread to exchange server list
+        Thread exchange = new Thread(() -> Exchange.serverExchange(connection.exchangeInterval * 1000, servers));
+        exchange.start();
+
         ServerSocketFactory factory = ServerSocketFactory.getDefault();
         try (ServerSocket server = factory.createServerSocket(port)) {
             logger.info("Starting the Biubiubiu EZShare Server");
@@ -51,9 +58,6 @@ public class Server {
             logger.info("using advertised hostname: " + Connection.hostName);
             logger.info("bound to port " + port);
             logger.info("started");
-
-            List<InetSocketAddress> serverList = new ArrayList<InetSocketAddress>();
-            List<InetSocketAddress> servers = java.util.Collections.synchronizedList(serverList);
             
             while (true) {
                 Socket client = server.accept();
@@ -63,7 +67,6 @@ public class Server {
                 Thread t = new Thread(() -> ServerControl.serverClient(client, connection.serverSecret, servers));
                 t.start();
             }
-
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, ex.getMessage());
         }

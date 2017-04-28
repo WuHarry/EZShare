@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  * and write the response to the client
  */
 
-class ServerControl {
+class ServerControl{
 
     private static final String PUBLISH = "PUBLISH";
     private static final String REMOVE = "REMOVE";
@@ -50,6 +50,7 @@ class ServerControl {
      * @param servers List of servers the original server currently knows about
      */
     static void serverClient(Socket client, String secret, List<InetSocketAddress> servers) {
+
         try (Socket clientSocket = client) {
             JSONReader newResource;
             String command;
@@ -182,21 +183,21 @@ class ServerControl {
                                 }
                                 break;
                             case FETCH:
-                                try{
+                                try {
                                     Common.checkNull(newResource);
-                                    Resource resource = Fetch.fetch(newResource,db);
-                                    uploadResources(resource,output);
-                                }catch (InvalidResourceException e1) {
+                                    Resource resource = Fetch.fetch(newResource, db);
+                                    uploadResources(resource, output);
+                                } catch (InvalidResourceException e1) {
                                     JsonObject errorMessage = invalidResponse(FETCH);
                                     output.writeUTF(errorMessage.toString());
                                     output.flush();
-                                }catch (MissingComponentException e2){
+                                } catch (MissingComponentException e2) {
 
                                 }
                                 break;
                             case EXCHANGE:
                                 try {
-                                    Exchange.exchange(newResource, db, servers);
+                                    Exchange.exchange(newResource, servers);
                                     JsonObject successMessage = new JsonObject();
                                     successMessage.addProperty("response", "success");
                                     logger.info("Successfully exchanged server list.");
@@ -255,10 +256,10 @@ class ServerControl {
 
         JsonObject errorMessage = new JsonObject();
         errorMessage.addProperty("response", "error");
-        if(command.equals(PUBLISH) || command.equals(REMOVE)
-                || command.equals(SHARE)){
+        if (command.equals(PUBLISH) || command.equals(REMOVE)
+                || command.equals(SHARE)) {
             errorMessage.addProperty("errorMessage", "invalid resource");
-        }else if (command.equals(QUERY) || command.equals(FETCH)){
+        } else if (command.equals(QUERY) || command.equals(FETCH)) {
             errorMessage.addProperty("errorMessage", "invalid resourceTemplate");
         }
         logger.warning("Resource to " + command + " contained incorrect information that could not be recovered from.");
@@ -270,14 +271,14 @@ class ServerControl {
      * The method to provide the function to upload files to the client
      *
      * @param resource the resource that client requested
-     * @param output the output stream to the client
+     * @param output   the output stream to the client
      */
-    private static void uploadResources(Resource resource, DataOutputStream output){
+    private static void uploadResources(Resource resource, DataOutputStream output) {
 
         String filePath = resource.getUri().substring(8);
         File f = new File(filePath);
-        if(f.exists()){
-            try{
+        if (f.exists()) {
+            try {
                 output.writeUTF("{\"response\":\"success\"}");
                 logger.fine("[SENT] - " + "{\"response\":\"success\"}");
 
@@ -288,11 +289,11 @@ class ServerControl {
                 logger.fine("[SENT] - " + trigger.toString());
 
                 // Start sending file
-                RandomAccessFile byteFile = new RandomAccessFile(f,"r");
-                byte[] sendingBuffer = new byte[1024*1024];
+                RandomAccessFile byteFile = new RandomAccessFile(f, "r");
+                byte[] sendingBuffer = new byte[1024 * 1024];
                 int num;
                 // While there are still bytes to send..
-                while((num = byteFile.read(sendingBuffer)) > 0){
+                while ((num = byteFile.read(sendingBuffer)) > 0) {
                     output.write(Arrays.copyOf(sendingBuffer, num));
                     logger.fine("[SENT] - " + num);
                 }
@@ -300,8 +301,8 @@ class ServerControl {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }else{
-            try{
+        } else {
+            try {
                 output.writeUTF("{\"response\":\"success\"}");
                 logger.fine("[SENT] - {\"response\":\"success\"}");
                 output.writeUTF("{\"resultSize\":0}");
@@ -312,4 +313,6 @@ class ServerControl {
             }
         }
     }
+
+
 }

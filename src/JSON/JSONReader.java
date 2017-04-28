@@ -170,8 +170,9 @@ public class JSONReader {
      * Server list contains two hostname and two ports
      * The first index of the array would contains the first hostname and port
      * The second index would contains the second
-     * @return the serverlist String Array with has two dimensions
-     * @throws InvalidServerException 
+     *
+     * @return the serverList String Array with has two dimensions
+     * @throws InvalidServerException  throw exceptions if serverList has invalid port number
      */
     public List<InetSocketAddress> getServerList() throws InvalidServerException {
         List<InetSocketAddress> serverList = new ArrayList<InetSocketAddress>();
@@ -191,6 +192,22 @@ public class JSONReader {
         return serverList;
     }
 
+    public static JsonObject generateServerList(List<InetSocketAddress> servers, int serverToShare){
+
+        JsonArray serverList = new JsonArray();
+        for(InetSocketAddress server : servers){
+            if(!server.equals(servers.get(serverToShare))){
+                JsonObject host = new JsonObject();
+                host.addProperty("hostname", server.getAddress().toString());
+                host.addProperty("port", server.getPort());
+                serverList.add(host);
+            }
+        }
+        JsonObject sendMessage = new JsonObject();
+        sendMessage.addProperty("command", "EXCHANGE");
+        sendMessage.add("serverList", serverList);
+        return sendMessage;
+    }
     /**
      * The method to check whether a string is a valid json string
      *
