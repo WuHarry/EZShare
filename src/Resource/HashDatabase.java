@@ -3,6 +3,7 @@ package Resource;
 import Connection.Connection;
 import EZShare.Server;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,9 +49,11 @@ public class HashDatabase {
     public HashDatabase() {
         lock = new ReentrantReadWriteLock();
         this.db = new HashMap<String, ChannelDB>();
+        //Add a new query
         List<String> tags = new ArrayList<String>();
+        tags.add("jpg");
         String ezserver = Connection.hostName + ":" + Server.port;
-        insertResource(new Resource("", "", tags, "", "", "", ezserver));
+        insertResource(new Resource("Biubiubiu", "A secret", tags, "file:///D:/Decuments/Harry/Documents/GitHub/EZShare/server_file/photo.jpg", "", "", ezserver));
     }
 
     /**

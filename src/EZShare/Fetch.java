@@ -4,7 +4,6 @@ import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
 import exceptions.InvalidResourceException;
-import exceptions.NonExistentResourceException;
 
 import java.net.URI;
 import java.net.URISyntaxException;

@@ -3,7 +3,6 @@ package EZShare;
 import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
-import com.sun.org.apache.regexp.internal.RE;
 import exceptions.IncorrectSecretException;
 import exceptions.InvalidResourceException;
 import exceptions.InvalidServerException;
@@ -275,7 +274,7 @@ class ServerControl {
      */
     private static void uploadResources(Resource resource, DataOutputStream output){
 
-        String filePath = resource.getUri();
+        String filePath = resource.getUri().substring(8);
         File f = new File(filePath);
         if(f.exists()){
             try{
@@ -298,6 +297,16 @@ class ServerControl {
                     logger.fine("[SENT] - " + num);
                 }
                 byteFile.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else{
+            try{
+                output.writeUTF("{\"response\":\"success\"}");
+                logger.fine("[SENT] - {\"response\":\"success\"}");
+                output.writeUTF("{\"resultSize\":0}");
+                logger.fine("[SENT] - {\"resultSize\":0}");
+                output.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }
