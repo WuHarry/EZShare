@@ -84,7 +84,7 @@ class ServerControl {
                                 } catch (InvalidResourceException e1) {
                                     invalidResource(PUBLISH, output);
                                 } catch (MissingComponentException e2) {
-                                    missingResources(PUBLISH,output);
+                                    missingResources(PUBLISH, output);
                                 }
                                 break;
                             case REMOVE:
@@ -101,7 +101,7 @@ class ServerControl {
                                 } catch (InvalidResourceException e) {
                                     invalidResource(REMOVE, output);
                                 } catch (MissingComponentException e2) {
-                                    missingResources(REMOVE,output);
+                                    missingResources(REMOVE, output);
                                 } catch (NonExistentResourceException e3) {
                                     logger.warning("tried to remove resource which didn't exist");
                                     logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"cannot remove resource\"}");
@@ -236,6 +236,7 @@ class ServerControl {
      * The method to generate response to invalid request
      *
      * @param command the command that server received
+     * @param output  the output Stream
      */
     private static void invalidResource(String command, DataOutputStream output) {
 
@@ -257,15 +258,21 @@ class ServerControl {
         }
     }
 
+    /**
+     * The method to generate response to missing resources request
+     *
+     * @param command the command that server received
+     * @param output  the output Stream
+     */
     private static void missingResources(String command, DataOutputStream output) {
 
-        try{
-            if(command.equals(PUBLISH) || command.equals(REMOVE)){
+        try {
+            if (command.equals(PUBLISH) || command.equals(REMOVE)) {
                 logger.warning("missing resource");
                 output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
                 logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
                 output.flush();
-            } else if (command.equals(FETCH) || command.equals(QUERY)){
+            } else if (command.equals(FETCH) || command.equals(QUERY)) {
                 logger.warning("missing resourceTemplate");
                 output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
                 logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
