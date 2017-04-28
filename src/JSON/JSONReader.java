@@ -4,6 +4,8 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import Connection.Connection;
+import EZShare.Server;
 import com.google.gson.*;
 
 import exceptions.InvalidServerException;
@@ -195,14 +197,16 @@ public class JSONReader {
     public static JsonObject generateServerList(List<InetSocketAddress> servers, int serverToShare){
 
         JsonArray serverList = new JsonArray();
+
         for(InetSocketAddress server : servers){
             if(!server.equals(servers.get(serverToShare))){
                 JsonObject host = new JsonObject();
-                host.addProperty("hostname", server.getAddress().toString());
+                host.addProperty("hostname", server.getAddress().getHostName());
                 host.addProperty("port", server.getPort());
                 serverList.add(host);
             }
         }
+
         JsonObject sendMessage = new JsonObject();
         sendMessage.addProperty("command", "EXCHANGE");
         sendMessage.add("serverList", serverList);

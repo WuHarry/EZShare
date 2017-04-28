@@ -45,17 +45,19 @@ public class Exchange {
         }
     }
 
-    static void serverExchange(int exchangeInterval, List<InetSocketAddress> servers){
+    static void serverExchange(int exchangeInterval, List<InetSocketAddress> servers) {
 
-        while(true){
-            try{
+        while (true) {
+            try {
                 Thread.sleep(exchangeInterval);
-                if (!servers.isEmpty()){
+                System.out.println("success");
+                if (!servers.isEmpty()) {
                     //pick the random server to exchange
-                    int serverToShare = (int)(Math.random()*servers.size());
-                    String serverIP = servers.get(serverToShare).getAddress().toString();
+                    int serverToShare = (int) (Math.random() * servers.size());
+                    String serverIP = servers.get(serverToShare).getAddress().getHostName();
+                    System.out.println(servers.size());
                     int serverPort = servers.get(serverToShare).getPort();
-                    try(Socket socket = new Socket(serverIP, serverPort)){
+                    try (Socket socket = new Socket(serverIP, serverPort)) {
                         //input stream
                         DataInputStream input =
                                 new DataInputStream(socket.getInputStream());
@@ -69,8 +71,8 @@ public class Exchange {
                         logger.fine("[SENT] - " + serverList.toString());
                         output.flush();
 
-                        while(true){
-                            if(input.available()>0){
+                        while (true) {
+                            if (input.available() > 0) {
                                 String message = input.readUTF();
                                 logger.fine("[RECEIVE] - " + message);
                                 break;
@@ -78,8 +80,8 @@ public class Exchange {
                         }
                     } catch (UnknownHostException e) {
                         servers.remove(serverToShare);
-                        logger.info("Server " + serverIP + ":" + serverPort +" unreachable.");
-                        logger.info("[REMOVE] - Removed server " + serverIP + ":" +serverPort);
+                        logger.info("Server " + serverIP + ":" + serverPort + " unreachable.");
+                        logger.info("[REMOVE] - Removed server " + serverIP + ":" + serverPort);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

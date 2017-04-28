@@ -44,7 +44,7 @@ public class Connection {
     private JsonArray tagsArray = new JsonArray();
 
     //Server config option
-    public static String hostName = "Biubiubiu Server";
+    public static String hostName = "localhost";
     public String connectionIntervalLimit = "";
     public int exchangeInterval = 600;
     public int serverPort = 4000;
@@ -194,20 +194,17 @@ public class Connection {
             command = "EXCHANGE";
             commandObject.addProperty("command", command);
 
-            JsonObject server1 = new JsonObject();
-            JsonObject server2 = new JsonObject();
-
-            String[] list = servers.split(",");
-            String[] hostOne = list[0].split(":");
-            String[] hostTwo = list[1].split(":");
-            server1.addProperty("hostname", hostOne[0]);
-            server1.addProperty("port", hostOne[1]);
-            server2.addProperty("hostname", hostTwo[0]);
-            server2.addProperty("port", hostTwo[1]);
-
             JsonArray serverList = new JsonArray();
-            serverList.add(server1);
-            serverList.add(server2);
+            String[] list = servers.split(",");
+
+            for (String host : list){
+                JsonObject server = new JsonObject();
+                String[] hostAndPost = host.split(":");
+                server.addProperty("hostname", hostAndPost[0]);
+                server.addProperty("port", Integer.parseInt(hostAndPost[1]));
+                serverList.add(server);
+            }
+
             commandObject.add("serverList", serverList);
 
             System.out.println(commandObject.toString());
