@@ -1,6 +1,5 @@
 package Resource;
 
-import JSON.JSONReader;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -65,14 +64,16 @@ public class Resource {
         return ezserver;
     }
 
-    public void setOwner(String owner){this.owner = owner;}
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
 
-    public JsonObject toJsonObject(){
+    public JsonObject toJsonObject() {
 
         JsonObject resourceJson = new JsonObject();
         JsonArray tagsArray = new JsonArray();
 
-        for(String s : tags){
+        for (String s : tags) {
             tagsArray.add(s);
         }
         resourceJson.addProperty("name", name);

@@ -4,8 +4,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import Connection.Connection;
-import EZShare.Server;
 import com.google.gson.*;
 
 import exceptions.InvalidServerException;
@@ -24,6 +22,7 @@ public class JSONReader {
 
     /**
      * The constructor of the JSONReader
+     *
      * @param jsonString the json string which is ready to be convert into
      *                   JsonObject
      */
@@ -33,10 +32,9 @@ public class JSONReader {
             JsonParser parse = new JsonParser();
             object = (JsonObject) parse.parse(jsonString);
             //object = (JsonObject) parse.parse(new FileReader(fileName));
-            if(object.has("resource"))
-            {
+            if (object.has("resource")) {
                 resource = object.get("resource").getAsJsonObject();
-            } else if (object.has("resourceTemplate")){
+            } else if (object.has("resourceTemplate")) {
                 resource = object.get("resourceTemplate").getAsJsonObject();
             } else
                 resource = object;
@@ -48,14 +46,14 @@ public class JSONReader {
 
     /**
      * The constructor of the JSONReader
+     *
      * @param object the already exist JsonObject ready to be analysed
      */
-    public JSONReader(JsonObject object){
+    public JSONReader(JsonObject object) {
         this.object = object;
-        if(object.has("resource"))
-        {
+        if (object.has("resource")) {
             resource = object.get("resource").getAsJsonObject();
-        } else if (this.object.has("resourceTemplate")){
+        } else if (this.object.has("resourceTemplate")) {
             resource = object.get("resourceTemplate").getAsJsonObject();
         } else
             this.resource = object;
@@ -63,6 +61,7 @@ public class JSONReader {
 
     /**
      * The method to return the command
+     *
      * @return the command string
      */
     public String getCommand() {
@@ -71,6 +70,7 @@ public class JSONReader {
 
     /**
      * The method to return the resource included in the complete jsonObject
+     *
      * @return the resource JsonObject
      */
     public JsonObject getResources() {
@@ -79,6 +79,7 @@ public class JSONReader {
 
     /**
      * The method to return the resource name
+     *
      * @return the resource name string
      */
     public String getResourceName() {
@@ -87,6 +88,7 @@ public class JSONReader {
 
     /**
      * The method to return the resource description
+     *
      * @return the resource description string
      */
     public String getResourceDescription() {
@@ -95,6 +97,7 @@ public class JSONReader {
 
     /**
      * The method to return the resource uri
+     *
      * @return the resource uri string
      */
     public String getResourceUri() {
@@ -103,6 +106,7 @@ public class JSONReader {
 
     /**
      * The method to return the resource channel
+     *
      * @return the resource channel string
      */
     public String getResourceChannel() {
@@ -111,6 +115,7 @@ public class JSONReader {
 
     /**
      * The method to return the resource owner
+     *
      * @return the resource owner string
      */
     public String getResourceOwner() {
@@ -119,6 +124,7 @@ public class JSONReader {
 
     /**
      * The method to return the resource ezserver
+     *
      * @return the resource ezserver string
      */
     public String getResourceEZserver() {
@@ -132,6 +138,7 @@ public class JSONReader {
 
     /**
      * The method to return the resource tags
+     *
      * @return the resource tags string array
      */
     public String[] getResourceTags() {
@@ -146,6 +153,7 @@ public class JSONReader {
 
     /**
      * The method to return the resource secret
+     *
      * @return the secret string
      */
     public String getSecret() {
@@ -154,6 +162,7 @@ public class JSONReader {
 
     /**
      * The method to return the resource relay
+     *
      * @return the relay's value, true of false
      */
     public Boolean getRelay() {
@@ -162,6 +171,7 @@ public class JSONReader {
 
     /**
      * The method to return the resourceTemplate
+     *
      * @return the resourceTemplate JsonObject
      */
     public JsonObject getResourceTemplate() {
@@ -174,32 +184,32 @@ public class JSONReader {
      * The second index would contains the second
      *
      * @return the serverList String Array with has two dimensions
-     * @throws InvalidServerException  throw exceptions if serverList has invalid port number
+     * @throws InvalidServerException throw exceptions if serverList has invalid port number
      */
     public List<InetSocketAddress> getServerList() throws InvalidServerException {
         List<InetSocketAddress> serverList = new ArrayList<InetSocketAddress>();
         JsonArray list = object.get("serverList").getAsJsonArray();
-        try{
-        	for (int i = 0; i < list.size(); i++) {
+        try {
+            for (int i = 0; i < list.size(); i++) {
                 JsonObject host = list.get(i).getAsJsonObject();
                 String hostName = host.get("hostname").getAsString();
                 int port = host.get("port").getAsInt();
                 InetSocketAddress server = new InetSocketAddress(hostName, port);
                 serverList.add(server);
             }
-        }catch(IllegalArgumentException e){
-        	//Thrown if port number invalid (if hostname invalid will be unresolved, should check).
-        	throw new InvalidServerException("Server entry in serverList has invalid port number.");
+        } catch (IllegalArgumentException e) {
+            //Thrown if port number invalid (if hostname invalid will be unresolved, should check).
+            throw new InvalidServerException("Server entry in serverList has invalid port number.");
         }
         return serverList;
     }
 
-    public static JsonObject generateServerList(List<InetSocketAddress> servers, int serverToShare){
+    public static JsonObject generateServerList(List<InetSocketAddress> servers, int serverToShare) {
 
         JsonArray serverList = new JsonArray();
 
-        for(InetSocketAddress server : servers){
-            if(!server.equals(servers.get(serverToShare))){
+        for (InetSocketAddress server : servers) {
+            if (!server.equals(servers.get(serverToShare))) {
                 JsonObject host = new JsonObject();
                 host.addProperty("hostname", server.getAddress().getHostName());
                 host.addProperty("port", server.getPort());
@@ -212,6 +222,7 @@ public class JSONReader {
         sendMessage.add("serverList", serverList);
         return sendMessage;
     }
+
     /**
      * The method to check whether a string is a valid json string
      *

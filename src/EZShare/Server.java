@@ -58,7 +58,7 @@ public class Server {
             logger.info("using advertised hostname: " + Connection.hostName);
             logger.info("bound to port " + port);
             logger.info("started");
-            
+
             while (true) {
                 Socket client = server.accept();
                 counter++;

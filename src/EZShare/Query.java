@@ -20,7 +20,7 @@ class Query {
      * The query function of the server
      *
      * @param resource The resources should be queried.
-     * @param db The database the resource should be checked.
+     * @param db       The database the resource should be checked.
      * @return return all the resources that match the request
      * @throws InvalidResourceException If the resource supplied contains illegal fields, this is thrown.
      */
@@ -96,7 +96,7 @@ class Query {
                 }
             }
             //non ""
-            if (!owner.equals("") && !tag.equals("") && !uri.equals("") && !name.equals("") && !description.equals("")){
+            if (!owner.equals("") && !tag.equals("") && !uri.equals("") && !name.equals("") && !description.equals("")) {
                 Resource temp = db.pKeyLookup(channel, uri);
                 if (temp.getOwner().equals(owner) && temp.getDescription().contains(description)
                         && temp.getName().contains(name)) {

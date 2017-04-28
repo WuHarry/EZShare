@@ -7,17 +7,14 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Random;
 import java.util.logging.Logger;
 
-import Connection.Connection;
 import JSON.JSONReader;
-import Resource.HashDatabase;
 import com.google.gson.JsonObject;
 import exceptions.InvalidServerException;
 import exceptions.MissingComponentException;
 
-public class Exchange {
+class Exchange {
 
     private static Logger logger = Logger.getLogger(Exchange.class.getName());
 

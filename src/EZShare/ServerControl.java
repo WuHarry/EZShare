@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  * and write the response to the client
  */
 
-class ServerControl{
+class ServerControl {
 
     private static final String PUBLISH = "PUBLISH";
     private static final String REMOVE = "REMOVE";
@@ -313,6 +313,4 @@ class ServerControl{
             }
         }
     }
-
-
 }

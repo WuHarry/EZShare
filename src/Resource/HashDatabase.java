@@ -3,7 +3,6 @@ package Resource;
 import Connection.Connection;
 import EZShare.Server;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

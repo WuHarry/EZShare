@@ -197,7 +197,7 @@ public class Connection {
             JsonArray serverList = new JsonArray();
             String[] list = servers.split(",");
 
-            for (String host : list){
+            for (String host : list) {
                 JsonObject server = new JsonObject();
                 String[] hostAndPost = host.split(":");
                 server.addProperty("hostname", hostAndPost[0]);

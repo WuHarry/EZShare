@@ -25,22 +25,22 @@ class Fetch {
         String[] tags = resource.getResourceTags();
 
         //Check strings etc. are valid.
-        if(!Common.validateResource(name, description, tags, uri, channel, owner)){
+        if (!Common.validateResource(name, description, tags, uri, channel, owner)) {
             throw new InvalidResourceException("Tying to remove resource with invalid fields.");
         }
 
-        try{
+        try {
             URI path = new URI(uri);
-            if (!path.isAbsolute() && !path.getScheme().equals("file")){
+            if (!path.isAbsolute() && !path.getScheme().equals("file")) {
                 throw new InvalidResourceException("Trying to download resource with non-absolute or non-file uri.");
             }
-        }catch (URISyntaxException e) {
+        } catch (URISyntaxException e) {
             throw new InvalidResourceException("Attempting to download resource with invalid uri syntax.");
         }
 
         //Delete according to primary key.
         Resource match = db.pKeyLookup(channel, uri);
-        if(match!=null){
+        if (match != null) {
             return match;
         }
         throw new InvalidResourceException("Tried to download a non-existent resource from database.");
