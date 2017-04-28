@@ -78,8 +78,8 @@ class ServerControl {
                                     JsonObject successMessage = new JsonObject();
                                     successMessage.addProperty("response", "success");
                                     logger.info("Successfully published resource.");
-                                    logger.fine("[SENT] - " + successMessage.toString());
                                     output.writeUTF(successMessage.toString());
+                                    logger.fine("[SENT] - " + successMessage.toString());
                                     output.flush();
                                 } catch (InvalidResourceException e1) {
                                     invalidResource(PUBLISH, output);
@@ -95,8 +95,8 @@ class ServerControl {
                                     JsonObject successMessage = new JsonObject();
                                     successMessage.addProperty("response", "success");
                                     logger.info("Successfully removed resource.");
-                                    logger.fine("[SENT] - " + successMessage.toString());
                                     output.writeUTF(successMessage.toString());
+                                    logger.fine("[SENT] - " + successMessage.toString());
                                     output.flush();
                                 } catch (InvalidResourceException e) {
                                     invalidResource(REMOVE, output);
@@ -104,8 +104,8 @@ class ServerControl {
                                     missingResources(REMOVE, output);
                                 } catch (NonExistentResourceException e3) {
                                     logger.warning("tried to remove resource which didn't exist");
-                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"cannot remove resource\"}");
                                     output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"cannot remove resource\"}");
+                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"cannot remove resource\"}");
                                     output.flush();
                                 }
                                 break;
@@ -117,8 +117,8 @@ class ServerControl {
                                     JsonObject successMessage = new JsonObject();
                                     successMessage.addProperty("response", "success");
                                     logger.info("Successfully shared resource.");
-                                    logger.fine("[SENT] - " + successMessage.toString());
                                     output.writeUTF(successMessage.toString());
+                                    logger.fine("[SENT] - " + successMessage.toString());
                                     output.flush();
                                 } catch (InvalidResourceException e1) {
                                     invalidResource(SHARE, output);
@@ -127,16 +127,16 @@ class ServerControl {
                                     errorMessage.addProperty("response", "error");
                                     errorMessage.addProperty("errorMessage", "missing resource and/or secret");
                                     logger.warning("Share command missing resource or secret.");
-                                    logger.fine("[SENT] - " + errorMessage.toString());
                                     output.writeUTF(errorMessage.toString());
+                                    logger.fine("[SENT] - " + errorMessage.toString());
                                     output.flush();
                                 } catch (IncorrectSecretException e3) {
                                     JsonObject errorMessage = new JsonObject();
                                     errorMessage.addProperty("response", "error");
                                     errorMessage.addProperty("errorMessage", "incorrect secret");
                                     logger.warning("Share command used incorrect secret.");
-                                    logger.fine("[SENT] - " + errorMessage.toString());
                                     output.writeUTF(errorMessage.toString());
+                                    logger.fine("[SENT] - " + errorMessage.toString());
                                     output.flush();
                                 }
                                 break;
@@ -187,19 +187,16 @@ class ServerControl {
                                     JsonObject successMessage = new JsonObject();
                                     successMessage.addProperty("response", "success");
                                     logger.info("Successfully exchanged server list.");
-                                    logger.fine("[SENT] - " + successMessage.toString());
                                     output.writeUTF(successMessage.toString());
+                                    logger.fine("[SENT] - " + successMessage.toString());
                                     output.flush();
-                                } catch (MissingComponentException e1) {
-                                    logger.warning("missing serverList");
-                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing or invalid server list\"}");
-                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing or invalid server list\"}");
-                                    output.flush();
-                                } catch (InvalidServerException e2) {
+                                } catch (InvalidServerException e1) {
                                     logger.warning("invalid entry in server list");
-                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
-                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
+                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing or invalid server list\"}");
+                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing or invalid server list\"}");
                                     output.flush();
+                                } catch (MissingComponentException e2) {
+                                    missingResources(EXCHANGE, output);
                                 }
                                 break;
                             default:
@@ -209,11 +206,13 @@ class ServerControl {
                                     logger.warning("missing command");
                                     errorMessage.addProperty("errorMessage", "missing or incorrect type for command");
                                     output.writeUTF(errorMessage.toString());
+                                    logger.fine("[SENT] - " + errorMessage.toString());
                                     output.flush();
                                 } else {
                                     logger.warning("invalid command");
                                     errorMessage.addProperty("errorMessage", "invalid command");
                                     output.writeUTF(errorMessage.toString());
+                                    logger.fine("[SENT] - " + errorMessage.toString());
                                     output.flush();
                                 }
                                 break;
@@ -272,8 +271,12 @@ class ServerControl {
                 output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
                 logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
                 output.flush();
-            } else if (command.equals(FETCH) || command.equals(QUERY)) {
-                logger.warning("missing resourceTemplate");
+            } else if (command.equals(FETCH) || command.equals(QUERY) || command.equals(EXCHANGE)) {
+                if (command.equals(EXCHANGE)) {
+                    logger.warning("Missing serverList");
+                } else {
+                    logger.warning("missing resourceTemplate");
+                }
                 output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
                 logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
                 output.flush();
