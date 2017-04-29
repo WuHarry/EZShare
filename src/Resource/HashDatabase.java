@@ -52,7 +52,8 @@ public class HashDatabase {
         List<String> tags = new ArrayList<String>();
         tags.add("jpg");
         String ezserver = Connection.hostName + ":" + Server.port;
-        insertResource(new Resource("Biubiubiu", "A secret", tags, "file:///D:/Decuments/Harry/Documents/GitHub/EZShare/server_file/photo.jpg", "", "", ezserver));
+        insertResource(new Resource("Biubiubiu", "A secret",
+                tags, "file:///D:/Decuments/Harry/Documents/GitHub/EZShare/server_file/photo.jpg", "", "", ezserver));
     }
 
     /**

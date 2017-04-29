@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.logging.Logger;
 
+import Connection.Connection;
 import JSON.JSONReader;
 import com.google.gson.JsonObject;
 import exceptions.InvalidServerException;
@@ -44,7 +45,9 @@ class Exchange {
         for (InetSocketAddress server : serverList) {
             //Not sure if necessary, but ensures behaves as expected.
             synchronized (servers) {
-                if (!servers.contains(server)) {
+                if (!servers.contains(server) &&
+                        !server.getAddress().getHostName().equals(Connection.hostName) &&
+                        server.getPort() != Server.port) {
                     servers.add(server);
                 }
             }
