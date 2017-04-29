@@ -6,7 +6,6 @@ import Resource.Resource;
 import exceptions.InvalidResourceException;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -57,6 +56,39 @@ class Query {
             if (!owner.equals("") && (name + uri + description + tag).equals("")) {
                 if (db.ownerLookup(channel, owner) == null) return null;
                 resources.addAll(db.ownerLookup(channel, owner));
+                hideOwner(resources);
+                return resources;
+            }
+            //channel and uri
+            if (!uri.equals("") && (name + owner + description + tag).equals("")) {
+                if (db.uriLookup(channel, uri) == null) return null;
+                resources.add(db.uriLookup(channel, uri));
+                hideOwner(resources);
+                return resources;
+            }
+            //channel and description
+            if (!description.equals("") && (name + owner + uri + tag).equals("")) {
+                if (db.descLookup(channel, description) == null) return null;
+                resources.addAll(db.descLookup(channel, description));
+                hideOwner(resources);
+                return resources;
+            }
+            //channel and name
+            if (!name.equals("") && (description + owner + uri + tag).equals("")) {
+                if (db.nameLookup(channel, name) == null) return null;
+                resources.addAll(db.nameLookup(channel, name));
+                hideOwner(resources);
+                return resources;
+            }
+            //channel and tags
+            if (!tag.equals("") && (description + owner + uri + name).equals("")) {
+                if (db.channelLookup(channel) == null) return null;
+                resources.addAll(db.channelLookup(channel));
+                for (Resource r : resources) {
+                    if (!Arrays.equals(r.getTags().toArray(), tags)) {
+                        resources.remove(r);
+                    }
+                }
                 hideOwner(resources);
                 return resources;
             }
