@@ -85,7 +85,6 @@ class Common {
                 curr.getResourceDescription() == null || curr.getResourceOwner() == null || curr.getResourceTags() == null) {
             throw new MissingComponentException("Missing resource.");
         }
-        // to be continued
     }
 
     /**
