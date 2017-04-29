@@ -66,6 +66,7 @@ class Query {
             if (!description.equals("")) {
                 resources.removeIf(resource1 -> !resource1.getDescription().contains(description));
             }
+            hideOwner(resources);
             return resources;
         }
         return null;
