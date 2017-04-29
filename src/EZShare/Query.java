@@ -7,6 +7,7 @@ import exceptions.InvalidResourceException;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -39,112 +40,33 @@ class Query {
         if (!Common.validateResource(name, description, tags, uri, channel, owner)) {
             throw new InvalidResourceException("Trying to query Resource with illegal fields.");
         }
-
         if (relay) {
             String tag = "";
             for (String t : tags) {
                 tag += t;
             }
-            //Only channel and all ""
-            if ((channel + owner + name + uri + description + tag).equals(channel)) {
-                if (db.channelLookup(channel) == null) return null;
-                resources.addAll(db.channelLookup(channel));
-                hideOwner(resources);
-                return resources;
+            if (db.channelLookup(channel) == null) return null;
+            resources.addAll(db.channelLookup(channel));
+            //remove owner doesn't match
+            if (!owner.equals("")) {
+                resources.removeIf(resource1 -> !resource1.getOwner().equals(owner));
             }
-            //channel and owner
-            if (!owner.equals("") && (name + uri + description + tag).equals("")) {
-                if (db.ownerLookup(channel, owner) == null) return null;
-                resources.addAll(db.ownerLookup(channel, owner));
-                hideOwner(resources);
-                return resources;
+            //remove tags doesn't match
+            if (!tag.equals("")) {
+                resources.removeIf(resource1 -> !Arrays.equals(resource1.getTags().toArray(), tags));
             }
-            //channel and uri
-            if (!uri.equals("") && (name + owner + description + tag).equals("")) {
-                if (db.uriLookup(channel, uri) == null) return null;
-                resources.add(db.uriLookup(channel, uri));
-                hideOwner(resources);
-                return resources;
+            //remove uri doesn't match
+            if (!uri.equals("")) {
+                resources.removeIf(resource1 -> !resource1.getUri().equals(uri));
             }
-            //channel and description
-            if (!description.equals("") && (name + owner + uri + tag).equals("")) {
-                if (db.descLookup(channel, description) == null) return null;
-                resources.addAll(db.descLookup(channel, description));
-                hideOwner(resources);
-                return resources;
+            //remove name doesn't match
+            if (!name.equals("")) {
+                resources.removeIf(resource1 -> !resource1.getName().contains(name));
             }
-            //channel and name
-            if (!name.equals("") && (description + owner + uri + tag).equals("")) {
-                if (db.nameLookup(channel, name) == null) return null;
-                resources.addAll(db.nameLookup(channel, name));
-                hideOwner(resources);
-                return resources;
+            if (!description.equals("")) {
+                resources.removeIf(resource1 -> !resource1.getDescription().contains(description));
             }
-            //channel and tags
-            if (!tag.equals("") && (description + owner + uri + name).equals("")) {
-                if (db.channelLookup(channel) == null) return null;
-                resources.addAll(db.channelLookup(channel));
-                for (Resource r : resources) {
-                    if (!Arrays.equals(r.getTags().toArray(), tags)) {
-                        resources.remove(r);
-                    }
-                }
-                hideOwner(resources);
-                return resources;
-            }
-            //channel owner and tags
-            if (!owner.equals("") && !tag.equals("") && (name + description + uri).equals("")) {
-                if (db.ownerLookup(channel, owner) == null) return null;
-                resources.addAll(db.ownerLookup(channel, owner));
-                for (Resource r : resources) {
-                    if (!Arrays.equals(r.getTags().toArray(), tags)) {
-                        resources.remove(r);
-                    }
-                }
-                hideOwner(resources);
-                return resources;
-            }
-            //channel owner tags and uri or (name and description are "")
-            if (!owner.equals("") && !tag.equals("") && !uri.equals("") && (name + description).equals("")) {
-                Resource temp = db.pKeyLookup(channel, uri);
-                if (temp == null) return null;
-                if (temp.getOwner().equals(owner)) {
-                    resources.add(temp);
-                    hideOwner(resources);
-                    return resources;
-                }
-            }
-            //channel owner tags and uri or (name is not "")
-            if (!owner.equals("") && !tag.equals("") && !uri.equals("") && !name.equals("") && description.equals("")) {
-                Resource temp = db.pKeyLookup(channel, uri);
-                if (temp == null) return null;
-                if (temp.getOwner().equals(owner) && temp.getName().contains(name)) {
-                    resources.add(temp);
-                    hideOwner(resources);
-                    return resources;
-                }
-            }
-            //channel owner tags and uri or (description is not "")
-            if (!owner.equals("") && !tag.equals("") && !uri.equals("") && name.equals("") && !description.equals("")) {
-                Resource temp = db.pKeyLookup(channel, uri);
-                if (temp == null) return null;
-                if (temp.getOwner().equals(owner) && temp.getDescription().contains(description)) {
-                    resources.add(temp);
-                    hideOwner(resources);
-                    return resources;
-                }
-            }
-            //non ""
-            if (!owner.equals("") && !tag.equals("") && !uri.equals("") && !name.equals("") && !description.equals("")) {
-                Resource temp = db.pKeyLookup(channel, uri);
-                if (temp == null) return null;
-                if (temp.getOwner().equals(owner) && temp.getDescription().contains(description)
-                        && temp.getName().contains(name)) {
-                    resources.add(temp);
-                    hideOwner(resources);
-                    return resources;
-                }
-            }
+            return resources;
         }
         return null;
     }
