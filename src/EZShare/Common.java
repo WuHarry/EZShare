@@ -83,7 +83,7 @@ class Common {
     static void checkNull(JSONReader curr) throws MissingComponentException {
         if (curr.getResourceName() == null || curr.getResourceChannel() == null || curr.getResourceUri() == null ||
                 curr.getResourceDescription() == null || curr.getResourceOwner() == null || curr.getResourceTags() == null) {
-            throw new MissingComponentException("Missing resource.");
+            throw new MissingComponentException("missing resource");
         }
     }
 

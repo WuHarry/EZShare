@@ -33,7 +33,7 @@ class Exchange {
         //To conform with other command structure, move outside to Common method
         List<InetSocketAddress> serverList = resource.getServerList();
         if (serverList == null) {
-            throw new MissingComponentException("Trying to exchange without server list.");
+            throw new MissingComponentException("missing server list - Trying to exchange without server list.");
         }
 
         for (InetSocketAddress server : serverList) {

@@ -77,7 +77,6 @@ class ServerControl {
                                 } catch (MissingComponentException e2) {
                                     missingResources(PUBLISH, output);
                                 } catch (BrokenRuleException e3) {
-                                    logger.warning(e3.getLocalizedMessage());
                                     brokenRuleResponse(PUBLISH, output);
                                 }
                                 break;
@@ -108,7 +107,6 @@ class ServerControl {
                                     JsonObject errorMessage = new JsonObject();
                                     errorMessage.addProperty("response", "error");
                                     errorMessage.addProperty("errorMessage", "missing resource and/or secret");
-                                    logger.warning(e2.getLocalizedMessage());
                                     output.writeUTF(errorMessage.toString());
                                     logger.fine("[SENT] - " + errorMessage.toString());
                                     output.flush();
@@ -121,7 +119,6 @@ class ServerControl {
                                     logger.fine("[SENT] - " + errorMessage.toString());
                                     output.flush();
                                 } catch (BrokenRuleException e4) {
-                                    logger.warning(e4.getLocalizedMessage());
                                     brokenRuleResponse(SHARE, output);
                                 }
                                 break;
@@ -152,6 +149,7 @@ class ServerControl {
                                 } catch (InvalidResourceException e1) {
                                     invalidResource(QUERY, output);
                                 } catch (MissingComponentException e2) {
+                                    logger.warning("missing resourceTemplate");
                                     missingResources(QUERY, output);
                                 }
                                 break;
@@ -251,7 +249,7 @@ class ServerControl {
             errorMessage.addProperty("errorMessage", "invalid resourceTemplate");
         }
         try {
-            logger.warning("Resource to " + command + " contained incorrect information that could not be recovered from.");
+            logger.warning("Resource to " + command.toLowerCase() + " contained incorrect information that could not be recovered from.");
             output.writeUTF(errorMessage.toString());
             logger.fine("[SENT] - " + errorMessage.toString());
             output.flush();
@@ -269,16 +267,10 @@ class ServerControl {
     private static void missingResources(String command, DataOutputStream output) {
         try {
             if (command.equals(PUBLISH) || command.equals(REMOVE)) {
-                logger.warning("missing resource");
                 output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
                 logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resource\"}");
                 output.flush();
             } else if (command.equals(FETCH) || command.equals(QUERY) || command.equals(EXCHANGE)) {
-                if (command.equals(EXCHANGE)) {
-                    logger.warning("Missing serverList");
-                } else {
-                    logger.warning("missing resourceTemplate");
-                }
                 output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
                 logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
                 output.flush();
@@ -296,8 +288,8 @@ class ServerControl {
      */
     private static void brokenRuleResponse(String command, DataOutputStream output) {
         try {
-            output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"cannot " + command + " resource\"}");
-            logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"cannot " + command + " resource\"}");
+            output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"cannot " + command.toLowerCase() + " resource\"}");
+            logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"cannot " + command.toLowerCase() + " resource\"}");
             output.flush();
         } catch (IOException e) {
             logger.warning(e.getMessage());

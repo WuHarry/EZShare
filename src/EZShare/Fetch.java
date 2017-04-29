@@ -43,7 +43,7 @@ class Fetch {
         try {
             URI path = new URI(uri);
             if (path.toString().equals("")) {
-                throw new MissingComponentException("Missing uri");
+                throw new MissingComponentException("missing resourceTemplate - Missing uri");
             }
             if (!path.isAbsolute() && !path.getScheme().equals("file")) {
                 throw new InvalidResourceException("Trying to download resource with non-absolute or non-file uri.");
