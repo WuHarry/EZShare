@@ -62,6 +62,15 @@ public class JSONReader {
     }
 
     /**
+     * The method to return Json Object
+     *
+     * @return the command Json Object
+     */
+    public JsonObject getJsonObject() {
+        return this.object;
+    }
+
+    /**
      * The method to return the command
      *
      * @return the command string

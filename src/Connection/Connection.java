@@ -162,9 +162,9 @@ public class Connection {
             command = "QUERY";
             commandObject.addProperty("command", command);
             commandObject.addProperty("relay", true);
-            JsonObject resorceTemplate = new JsonObject();
-            resourceGenerator(resorceTemplate);
-            commandObject.add("resourceTemplate", resorceTemplate);
+            JsonObject resourceTemplate = new JsonObject();
+            resourceGenerator(resourceTemplate);
+            commandObject.add("resourceTemplate", resourceTemplate);
 
             return commandObject.toString();
         }

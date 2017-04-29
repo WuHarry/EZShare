@@ -9,7 +9,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -25,6 +24,7 @@ public class Server {
     public static int port = 4000;
     private static int counter = 0;
     private static Logger logger = Logger.getLogger(Server.class.getName());
+    public static List<InetSocketAddress> servers;
 
     /**
      * The main function of the server
@@ -45,7 +45,7 @@ public class Server {
 
         //store server list
         List<InetSocketAddress> serverList = new ArrayList<InetSocketAddress>();
-        List<InetSocketAddress> servers = java.util.Collections.synchronizedList(serverList);
+        servers = java.util.Collections.synchronizedList(serverList);
         //Start a thread to exchange server list
         Thread exchange = new Thread(() -> Exchange.serverExchange(connection.exchangeInterval * 1000, servers));
         exchange.start();
