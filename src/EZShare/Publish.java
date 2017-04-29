@@ -4,6 +4,7 @@ import Connection.Connection;
 import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
+import exceptions.BrokenRuleException;
 import exceptions.InvalidResourceException;
 
 import java.util.Arrays;
@@ -21,7 +22,7 @@ class Publish {
      * @param db       The database the resource should be inserted into.
      * @throws InvalidResourceException If the resource supplied contains illegal fields, this is thrown.
      */
-    static void publish(JSONReader resource, HashDatabase db) throws InvalidResourceException {
+    static void publish(JSONReader resource, HashDatabase db) throws InvalidResourceException, BrokenRuleException {
         String name = resource.getResourceName();
         String description = resource.getResourceDescription();
         String channel = resource.getResourceChannel();
@@ -41,7 +42,12 @@ class Publish {
         //Make sure matching primary key resources are removed.
         Resource match = db.pKeyLookup(channel, uri);
         if (match != null) {
-            db.deleteResource(match);
+            if(match.getOwner().equals(owner)){
+                db.deleteResource(match);
+            } else {
+                throw new BrokenRuleException("Attempt to publish" +
+                        " resources with same channel and uri but different owner");
+            }
         }
 
         //Add resource to database.

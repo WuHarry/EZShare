@@ -3,15 +3,10 @@ package EZShare;
 import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
-import exceptions.IncorrectSecretException;
-import exceptions.InvalidResourceException;
-import exceptions.InvalidServerException;
-import exceptions.MissingComponentException;
-import exceptions.NonExistentResourceException;
+import exceptions.*;
 
 import com.google.gson.JsonObject;
 
-import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -81,6 +76,9 @@ class ServerControl {
                                     invalidResource(PUBLISH, output);
                                 } catch (MissingComponentException e2) {
                                     missingResources(PUBLISH, output);
+                                } catch (BrokenRuleException e3) {
+                                    logger.warning(e3.getLocalizedMessage());
+                                    brokenRuleResponse(PUBLISH, output);
                                 }
                                 break;
                             case REMOVE:
@@ -94,10 +92,8 @@ class ServerControl {
                                 } catch (MissingComponentException e2) {
                                     missingResources(REMOVE, output);
                                 } catch (NonExistentResourceException e3) {
-                                    logger.warning("tried to remove resource which didn't exist");
-                                    output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"cannot remove resource\"}");
-                                    logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"cannot remove resource\"}");
-                                    output.flush();
+                                    logger.warning(e3.getLocalizedMessage());
+                                    brokenRuleResponse(REMOVE, output);
                                 }
                                 break;
                             case SHARE:
@@ -124,6 +120,9 @@ class ServerControl {
                                     output.writeUTF(errorMessage.toString());
                                     logger.fine("[SENT] - " + errorMessage.toString());
                                     output.flush();
+                                } catch (BrokenRuleException e4) {
+                                    logger.warning(e4.getLocalizedMessage());
+                                    brokenRuleResponse(SHARE, output);
                                 }
                                 break;
                             case QUERY:
@@ -220,7 +219,6 @@ class ServerControl {
      * @param output  the output stream to the client
      */
     private static void successResponse(String command, DataOutputStream output) {
-
         try {
             JsonObject successMessage = new JsonObject();
             successMessage.addProperty("response", "success");
@@ -244,7 +242,6 @@ class ServerControl {
      * @param output  the output Stream
      */
     private static void invalidResource(String command, DataOutputStream output) {
-
         JsonObject errorMessage = new JsonObject();
         errorMessage.addProperty("response", "error");
         if (command.equals(PUBLISH) || command.equals(REMOVE)
@@ -270,7 +267,6 @@ class ServerControl {
      * @param output  the output Stream
      */
     private static void missingResources(String command, DataOutputStream output) {
-
         try {
             if (command.equals(PUBLISH) || command.equals(REMOVE)) {
                 logger.warning("missing resource");
@@ -287,6 +283,22 @@ class ServerControl {
                 logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing resourceTemplate\"}");
                 output.flush();
             }
+        } catch (IOException e) {
+            logger.warning(e.getMessage());
+        }
+    }
+
+    /**
+     * The method to send client the error message when client break the rule
+     *
+     * @param command the command that client sent to the server
+     * @param output the output stream to the client
+     */
+    private static void brokenRuleResponse(String command, DataOutputStream output){
+        try{
+            output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"cannot " + command + " resource\"}");
+            logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"cannot " + command + " resource\"}");
+            output.flush();
         } catch (IOException e) {
             logger.warning(e.getMessage());
         }

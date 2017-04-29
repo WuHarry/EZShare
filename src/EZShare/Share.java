@@ -4,6 +4,7 @@ import Connection.Connection;
 import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
+import exceptions.BrokenRuleException;
 import exceptions.IncorrectSecretException;
 import exceptions.InvalidResourceException;
 import exceptions.MissingComponentException;
@@ -29,7 +30,7 @@ class Share {
      * @throws IncorrectSecretException  If the secret supplied does not match server secret, this is thrown.
      * @throws MissingComponentException If secret is missing from command, this is thrown.
      */
-    static void share(JSONReader resource, HashDatabase db, String serverSecret) throws InvalidResourceException, IncorrectSecretException, MissingComponentException {
+    static void share(JSONReader resource, HashDatabase db, String serverSecret) throws InvalidResourceException, IncorrectSecretException, MissingComponentException, BrokenRuleException {
         String name = resource.getResourceName();
         String description = resource.getResourceDescription();
         String channel = resource.getResourceChannel();
@@ -71,7 +72,12 @@ class Share {
         //Remove if match pKey in db
         Resource match = db.pKeyLookup(channel, uri);
         if (match != null) {
-            db.deleteResource(match);
+            if(match.getOwner().equals(owner)){
+                db.deleteResource(match);
+            } else {
+                throw new BrokenRuleException("Attempt to share" +
+                        " resources with same channel and uri but different owner");
+            }
         }
 
         //Add to db
