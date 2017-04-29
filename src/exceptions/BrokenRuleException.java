@@ -8,5 +8,7 @@ public class BrokenRuleException extends Exception {
 
     private static final long serialVersionUID = 7499045713237494907L;
 
-    public BrokenRuleException(String message) {super(message);}
+    public BrokenRuleException(String message) {
+        super(message);
+    }
 }

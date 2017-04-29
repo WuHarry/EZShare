@@ -42,13 +42,13 @@ class Share {
 
         if (secret == null) {
             //missing secret
-            throw new MissingComponentException();
+            throw new MissingComponentException("Share command missing resource or secret.");
         }
 
         //Check secret
         if (!secret.equals(serverSecret)) {
             //Incorrect secret, error.
-            throw new IncorrectSecretException();
+            throw new IncorrectSecretException("Trying to share Resource with incorrect secret");
         }
 
         //Validate strings
@@ -72,7 +72,7 @@ class Share {
         //Remove if match pKey in db
         Resource match = db.pKeyLookup(channel, uri);
         if (match != null) {
-            if(match.getOwner().equals(owner)){
+            if (match.getOwner().equals(owner)) {
                 db.deleteResource(match);
             } else {
                 throw new BrokenRuleException("Attempt to share" +

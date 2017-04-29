@@ -42,7 +42,7 @@ class Publish {
         //Make sure matching primary key resources are removed.
         Resource match = db.pKeyLookup(channel, uri);
         if (match != null) {
-            if(match.getOwner().equals(owner)){
+            if (match.getOwner().equals(owner)) {
                 db.deleteResource(match);
             } else {
                 throw new BrokenRuleException("Attempt to publish" +

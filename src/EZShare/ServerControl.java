@@ -108,7 +108,7 @@ class ServerControl {
                                     JsonObject errorMessage = new JsonObject();
                                     errorMessage.addProperty("response", "error");
                                     errorMessage.addProperty("errorMessage", "missing resource and/or secret");
-                                    logger.warning("Share command missing resource or secret.");
+                                    logger.warning(e2.getLocalizedMessage());
                                     output.writeUTF(errorMessage.toString());
                                     logger.fine("[SENT] - " + errorMessage.toString());
                                     output.flush();
@@ -116,7 +116,7 @@ class ServerControl {
                                     JsonObject errorMessage = new JsonObject();
                                     errorMessage.addProperty("response", "error");
                                     errorMessage.addProperty("errorMessage", "incorrect secret");
-                                    logger.warning("Share command used incorrect secret.");
+                                    logger.warning(e3.getLocalizedMessage());
                                     output.writeUTF(errorMessage.toString());
                                     logger.fine("[SENT] - " + errorMessage.toString());
                                     output.flush();
@@ -171,7 +171,7 @@ class ServerControl {
                                     Exchange.exchange(newResource, servers);
                                     successResponse(EXCHANGE, output);
                                 } catch (InvalidServerException e1) {
-                                    logger.warning("invalid entry in server list");
+                                    logger.warning(e1.getLocalizedMessage());
                                     output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing or invalid server list\"}");
                                     logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"missing or invalid server list\"}");
                                     output.flush();
@@ -292,10 +292,10 @@ class ServerControl {
      * The method to send client the error message when client break the rule
      *
      * @param command the command that client sent to the server
-     * @param output the output stream to the client
+     * @param output  the output stream to the client
      */
-    private static void brokenRuleResponse(String command, DataOutputStream output){
-        try{
+    private static void brokenRuleResponse(String command, DataOutputStream output) {
+        try {
             output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"cannot " + command + " resource\"}");
             logger.fine("[SENT] - {\"response\":\"error\", \"errorMessage\":\"cannot " + command + " resource\"}");
             output.flush();

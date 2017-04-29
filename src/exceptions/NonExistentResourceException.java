@@ -10,5 +10,4 @@ public class NonExistentResourceException extends Exception {
     public NonExistentResourceException(String message) {
         super(message);
     }
-
 }
