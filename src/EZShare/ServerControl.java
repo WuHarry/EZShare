@@ -11,6 +11,7 @@ import exceptions.NonExistentResourceException;
 
 import com.google.gson.JsonObject;
 
+import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -75,12 +76,7 @@ class ServerControl {
                                 try {
                                     Common.checkNull(newResource);
                                     Publish.publish(newResource, db);
-                                    JsonObject successMessage = new JsonObject();
-                                    successMessage.addProperty("response", "success");
-                                    logger.info("Successfully published resource.");
-                                    output.writeUTF(successMessage.toString());
-                                    logger.fine("[SENT] - " + successMessage.toString());
-                                    output.flush();
+                                    successResponse(PUBLISH, output);
                                 } catch (InvalidResourceException e1) {
                                     invalidResource(PUBLISH, output);
                                 } catch (MissingComponentException e2) {
@@ -92,12 +88,7 @@ class ServerControl {
                                 try {
                                     Common.checkNull(newResource);
                                     Remove.remove(newResource, db);
-                                    JsonObject successMessage = new JsonObject();
-                                    successMessage.addProperty("response", "success");
-                                    logger.info("Successfully removed resource.");
-                                    output.writeUTF(successMessage.toString());
-                                    logger.fine("[SENT] - " + successMessage.toString());
-                                    output.flush();
+                                    successResponse(REMOVE, output);
                                 } catch (InvalidResourceException e) {
                                     invalidResource(REMOVE, output);
                                 } catch (MissingComponentException e2) {
@@ -114,12 +105,7 @@ class ServerControl {
                                 try {
                                     Common.checkNull(newResource);
                                     Share.share(newResource, db, secret);
-                                    JsonObject successMessage = new JsonObject();
-                                    successMessage.addProperty("response", "success");
-                                    logger.info("Successfully shared resource.");
-                                    output.writeUTF(successMessage.toString());
-                                    logger.fine("[SENT] - " + successMessage.toString());
-                                    output.flush();
+                                    successResponse(SHARE, output);
                                 } catch (InvalidResourceException e1) {
                                     invalidResource(SHARE, output);
                                 } catch (MissingComponentException e2) {
@@ -184,12 +170,7 @@ class ServerControl {
                             case EXCHANGE:
                                 try {
                                     Exchange.exchange(newResource, servers);
-                                    JsonObject successMessage = new JsonObject();
-                                    successMessage.addProperty("response", "success");
-                                    logger.info("Successfully exchanged server list.");
-                                    output.writeUTF(successMessage.toString());
-                                    logger.fine("[SENT] - " + successMessage.toString());
-                                    output.flush();
+                                    successResponse(EXCHANGE, output);
                                 } catch (InvalidServerException e1) {
                                     logger.warning("invalid entry in server list");
                                     output.writeUTF("{\"response\":\"error\", \"errorMessage\":\"missing or invalid server list\"}");
@@ -219,8 +200,8 @@ class ServerControl {
                         }
                     } else {
                         logger.fine("[RECEIVE] - " + jsonString);
-                        logger.fine("[SENT] - " + "{\"response\":\"error, invalid string\"}");
                         output.writeUTF("{\"response\":\"error, invalid string\"}");
+                        logger.fine("[SENT] - " + "{\"response\":\"error, invalid string\"}");
                         output.flush();
                     }
 //                    System.out.println("Database size: " + db.getDatabaseSize());
@@ -228,6 +209,31 @@ class ServerControl {
             }
         } catch (IOException ex) {
             logger.warning(ex.getMessage());
+        }
+    }
+
+    /**
+     * The method to send client successful response, used by the function
+     * PUBLISH, REMOVE, SHARE, EXCHANGE
+     *
+     * @param command the command that client sent to server
+     * @param output  the output stream to the client
+     */
+    private static void successResponse(String command, DataOutputStream output) {
+
+        try {
+            JsonObject successMessage = new JsonObject();
+            successMessage.addProperty("response", "success");
+            if (command.equals(EXCHANGE)) {
+                logger.info("Successfully exchanged server list.");
+            } else {
+                logger.info("Successfully " + command + " resource.");
+            }
+            output.writeUTF(successMessage.toString());
+            logger.fine("[SENT] - " + successMessage.toString());
+            output.flush();
+        } catch (IOException e) {
+            logger.warning(e.getMessage());
         }
     }
 

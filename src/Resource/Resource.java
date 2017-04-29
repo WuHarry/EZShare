@@ -21,6 +21,17 @@ public class Resource {
     private String owner;
     private String ezserver;
 
+    /**
+     * The Resource constructor
+     *
+     * @param name        the resource's name
+     * @param description the resource's description
+     * @param tags        the resource's the tags
+     * @param uri         the resource's uri
+     * @param channel     the resource's channel
+     * @param owner       the resource's owner
+     * @param ezserver    the resource's ezserver
+     */
     public Resource(String name, String description, List<String> tags, String uri,
                     String channel, String owner, String ezserver) {
         if (name == null || description == null || uri == null || tags == null || channel == null || owner == null || ezserver == null) {
@@ -68,6 +79,11 @@ public class Resource {
         this.owner = owner;
     }
 
+    /**
+     * The method to convert the resource to a JsonObject
+     *
+     * @return the resource's JsonObject
+     */
     public JsonObject toJsonObject() {
 
         JsonObject resourceJson = new JsonObject();

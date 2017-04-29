@@ -17,6 +17,10 @@ import java.util.logging.LogManager;
  */
 
 class Common {
+
+    /**
+     * The method to load log properties file
+     */
     static void logConfig() {
         //Load log config file
         try {
@@ -45,13 +49,14 @@ class Common {
      * Returns true only if the described resource is made up of valid components (in terms of
      * String composition, not particular logic of a command).
      *
-     * @param name
-     * @param desc
-     * @param tags
-     * @param uri
-     * @param channel
-     * @param owner
-     * @return
+     * @param name    the resource's name
+     * @param desc    the resource's description
+     * @param tags    the resource's the tags
+     * @param uri     the resource's uri
+     * @param channel the resource's channel
+     * @param owner   the resource's owner
+     * @return return true if the resource is valid,
+     * false if the resource is invalid
      */
     static boolean validateResource(String name, String desc, String[] tags, String uri,
                                     String channel, String owner) {

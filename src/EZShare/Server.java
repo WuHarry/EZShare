@@ -46,7 +46,6 @@ public class Server {
         //store server list
         List<InetSocketAddress> serverList = new ArrayList<InetSocketAddress>();
         List<InetSocketAddress> servers = java.util.Collections.synchronizedList(serverList);
-
         //Start a thread to exchange server list
         Thread exchange = new Thread(() -> Exchange.serverExchange(connection.exchangeInterval * 10, servers));
         exchange.start();

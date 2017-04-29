@@ -23,9 +23,9 @@ class Exchange {
      * non-exist serverList to the server's list
      *
      * @param resource the command resource that client sent to the server
-     * @param servers the server's list of servers
+     * @param servers  the server's list of servers
      * @throws MissingComponentException throws when the serverList received is null
-     * @throws InvalidServerException throws when the serverList contains unresolved server
+     * @throws InvalidServerException    throws when the serverList contains unresolved server
      */
     static void exchange(JSONReader resource, List<InetSocketAddress> servers) throws MissingComponentException, InvalidServerException {
 
@@ -57,7 +57,7 @@ class Exchange {
      * and send the server list as a Json String
      *
      * @param exchangeInterval the exchange time period
-     * @param servers the server's list
+     * @param servers          the server's list
      */
     static void serverExchange(int exchangeInterval, List<InetSocketAddress> servers) {
 

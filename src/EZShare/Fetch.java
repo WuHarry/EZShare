@@ -16,6 +16,16 @@ import java.net.URISyntaxException;
  */
 class Fetch {
 
+    /**
+     * The method to achieve server's fetch function, so that the server could
+     * response to the client
+     *
+     * @param resource the client's resource request
+     * @param db       the server's database
+     * @return the resource that hit by the client's request
+     * @throws InvalidResourceException  If the resource supplied contains illegal fields, this is thrown.
+     * @throws MissingComponentException If the resource supplied contains missing fields, this is thrown.
+     */
     static Resource fetch(JSONReader resource, HashDatabase db) throws InvalidResourceException, MissingComponentException {
 
         String name = resource.getResourceName();
@@ -32,7 +42,7 @@ class Fetch {
 
         try {
             URI path = new URI(uri);
-            if(path.toString().equals("")){
+            if (path.toString().equals("")) {
                 throw new MissingComponentException("Missing uri");
             }
             if (!path.isAbsolute() && !path.getScheme().equals("file")) {

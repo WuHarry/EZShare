@@ -16,6 +16,16 @@ import exceptions.NonExistentResourceException;
  *         The other fields of the resource are not needed; if they exist, ignore;
  */
 class Remove {
+
+    /**
+     * The server's remove to read the client's request, and remove the resource
+     * when the resource hit the request
+     *
+     * @param resource the client's resource request
+     * @param db       the server's database
+     * @throws InvalidResourceException     If the resource supplied contains illegal fields, this is thrown.
+     * @throws NonExistentResourceException If the resource supplied contains missing fields, this is thrown.
+     */
     static void remove(JSONReader resource, HashDatabase db) throws InvalidResourceException, NonExistentResourceException {
 
         String channel = resource.getResourceChannel();
