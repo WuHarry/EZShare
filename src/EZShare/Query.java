@@ -6,6 +6,7 @@ import Resource.Resource;
 import exceptions.InvalidResourceException;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -47,18 +48,21 @@ class Query {
             }
             //Only channel and all ""
             if ((channel + owner + name + uri + description + tag).equals(channel)) {
+                if (db.channelLookup(channel) == null) return null;
                 resources.addAll(db.channelLookup(channel));
                 hideOwner(resources);
                 return resources;
             }
             //channel and owner
             if (!owner.equals("") && (name + uri + description + tag).equals("")) {
+                if (db.ownerLookup(channel, owner) == null) return null;
                 resources.addAll(db.ownerLookup(channel, owner));
                 hideOwner(resources);
                 return resources;
             }
             //channel owner and tags
             if (!owner.equals("") && !tag.equals("") && (name + description + uri).equals("")) {
+                if (db.ownerLookup(channel, owner) == null) return null;
                 resources.addAll(db.ownerLookup(channel, owner));
                 for (Resource r : resources) {
                     if (!Arrays.equals(r.getTags().toArray(), tags)) {
@@ -71,6 +75,7 @@ class Query {
             //channel owner tags and uri or (name and description are "")
             if (!owner.equals("") && !tag.equals("") && !uri.equals("") && (name + description).equals("")) {
                 Resource temp = db.pKeyLookup(channel, uri);
+                if (temp == null) return null;
                 if (temp.getOwner().equals(owner)) {
                     resources.add(temp);
                     hideOwner(resources);
@@ -80,6 +85,7 @@ class Query {
             //channel owner tags and uri or (name is not "")
             if (!owner.equals("") && !tag.equals("") && !uri.equals("") && !name.equals("") && description.equals("")) {
                 Resource temp = db.pKeyLookup(channel, uri);
+                if (temp == null) return null;
                 if (temp.getOwner().equals(owner) && temp.getName().contains(name)) {
                     resources.add(temp);
                     hideOwner(resources);
@@ -89,6 +95,7 @@ class Query {
             //channel owner tags and uri or (description is not "")
             if (!owner.equals("") && !tag.equals("") && !uri.equals("") && name.equals("") && !description.equals("")) {
                 Resource temp = db.pKeyLookup(channel, uri);
+                if (temp == null) return null;
                 if (temp.getOwner().equals(owner) && temp.getDescription().contains(description)) {
                     resources.add(temp);
                     hideOwner(resources);
@@ -98,6 +105,7 @@ class Query {
             //non ""
             if (!owner.equals("") && !tag.equals("") && !uri.equals("") && !name.equals("") && !description.equals("")) {
                 Resource temp = db.pKeyLookup(channel, uri);
+                if (temp == null) return null;
                 if (temp.getOwner().equals(owner) && temp.getDescription().contains(description)
                         && temp.getName().contains(name)) {
                     resources.add(temp);
