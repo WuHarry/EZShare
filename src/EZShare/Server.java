@@ -52,11 +52,8 @@ public class Server {
         Boolean secureFlag = false;
         Connection connection = new Connection();
         
-        secureFlag = Connection.getSecure();
-        
-        
+        secureFlag = Connection.getSecure();   
         connection.serverCli(args);
-//        System.out.println("Hey you are within security");
  
         //change port
         port = connection.serverPort;
@@ -102,30 +99,29 @@ public class Server {
   	  
   	  //enable debugging to view the handshake and communication which happens between the SSLClient
   	  System.setProperty("javax.net.debug","all");
-  try {
+  	  try {
       //create SSL server socket  
-  	SSLServerSocketFactory sslserversocketfactory =(SSLServerSocketFactory) SSLServerSocketFactory
-  				.getDefault();
-  	SSLServerSocket sslserversocket = (SSLServerSocket) sslserversocketfactory
-  				.createServerSocket(9999);
+		  	SSLServerSocketFactory sslserversocketfactory =(SSLServerSocketFactory) SSLServerSocketFactory
+		  				.getDefault();
+		  	SSLServerSocket sslserversocket = (SSLServerSocket) sslserversocketfactory
+		  				.createServerSocket(9999);
         
-      //Accept client connection
-      SSLSocket sslsocket = (SSLSocket) sslserversocket.accept();
+		  	//Accept client connection
+		  	SSLSocket sslsocket = (SSLSocket) sslserversocket.accept();
       
-      //Create buffered reader to read input from the client  
-
-      InputStream inputstream = sslsocket.getInputStream();
-      InputStreamReader inputstreamreader =new InputStreamReader(inputstream);
-      BufferedReader bufferedreader = new BufferedReader(inputstreamreader);
-        
-      String string = null;
-      while((string = bufferedreader.readLine()) != null)
-      {
-	      System.out.println(string);
-	      System.out.flush();
-      }
-      }
-      catch (Exception exception)
+		  	//Create buffered reader to read input from the client  
+		  	InputStream inputstream = sslsocket.getInputStream();
+		  	InputStreamReader inputstreamreader =new InputStreamReader(inputstream);
+		  	BufferedReader bufferedreader = new BufferedReader(inputstreamreader);
+	        
+		  	String string = null;
+		  	while((string = bufferedreader.readLine()) != null)
+		  	{
+		      System.out.println(string);
+		      System.out.flush();
+		  	}
+	      	}
+  	  catch (Exception exception)
       {
         exception.printStackTrace();
       }
