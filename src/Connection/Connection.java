@@ -32,7 +32,13 @@ public class Connection {
     //Client
     public String host = "1.1.1.1";
     public int port = 3000;
-
+    
+    
+    //for secure connection
+    public int sport = 3781;
+    public String secure = "";
+    public static boolean secureSwitch = false;
+    
     private String channel = "";
     private String description = "";
     private String name = "";
@@ -86,7 +92,9 @@ public class Connection {
         options.addOption("share", false, "share resource on server");
         options.addOption("tags", true, "resource tags, tag1,tag2,tag3,...");
         options.addOption("uri", true, "resource URI");
-
+        options.addOption("secure", false, "for SSL connection");
+        options.addOption("sport", true, "for port number of SSL connection");
+        
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
 
@@ -107,7 +115,13 @@ public class Connection {
         if (cmd.hasOption("port")) {
             port = Integer.parseInt(cmd.getOptionValue("port"));
         }
-
+        //add by Danni Zhao 9 May 2017
+        if (cmd.hasOption("sport")) {
+            sport = Integer.parseInt(cmd.getOptionValue("sport"));
+        }
+        if (cmd.hasOption("secure")) {
+            secureSwitch = true;
+        }
         if (cmd.hasOption("debug")) {
             debugSwitch = true;
         }
@@ -238,7 +252,12 @@ public class Connection {
         resource.addProperty("owner", owner);
         resource.addProperty("ezserver", ezserver);
     }
-
+    
+    public static boolean getSecure(){
+    	if (secureSwitch)
+    			return true;
+    	else return false;
+    }
     /**
      * The method to add and analyze the command options for the server
      * and config different parameters of the server
@@ -278,7 +297,14 @@ public class Connection {
         }
 
         assert cmd != null;
-
+        
+        //for secure connection
+        if (cmd.hasOption("secure")) {
+            secureSwitch = true;
+            logger.info("secure connection established");
+            
+        }
+        
         if (cmd.hasOption("debug")) {
             debugSwitch = true;
             logger.info("debug mode on");

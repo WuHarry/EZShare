@@ -10,6 +10,9 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.logging.*;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 /**
  * Created by Yahang Wu on 2017/3/31.
  * COMP90015 Distributed System Project1 EZServer
@@ -23,6 +26,9 @@ public class Client {
     //ip and port
     private static String ip = "1.1.1.1";
     private static int port = 3000;
+    
+    
+    public static boolean secureFlag= false;
     //Mark whether next response from server has some file
     private static boolean hasResources = false;
     //Record the resource size if the resource is a file
@@ -52,7 +58,11 @@ public class Client {
         //update ip and port
         ip = connection.host;
         port = connection.port;
-
+        
+        //for secure connection
+        secureFlag = connection.getSecure();
+        if (!secureFlag)
+        {	
         //new client socket
         try (Socket socket = new Socket(ip, port)) {
             //input stream
@@ -91,6 +101,45 @@ public class Client {
             socket.close();
         } catch (IOException e) {
             logger.warning("[ERROR] - Can not establish connection.");
+        }}//end if(secure)
+        else 
+        	//for a secure connection
+        {
+        	System.out.println("two sockets work");
+        	try {
+        	    //Location of the Java keystore file containing the collection of 
+        		//certificates trusted by the application (trust store);
+        		System.setProperty("javax.net.ssl.trustStore", "clientKeyStore/clientKeystore.jks");
+        		//System.setProperty("javax.net.debug","all");
+        		//Create SSL socket and connect it to the remote server
+        		SSLSocketFactory sslsocketfactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+        		//errors:	at sun.security.ssl.SSLSocketFactoryImpl.createSocket(SSLSocketFactoryImpl.java:88)
+        	    SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket("localhost", 9999);
+        	      
+        	      //create buffered reader to read input from the console
+//        	      InputStream inputstream = System.in;
+//        	      InputStreamReader inputstreamreader = new InputStreamReader(inputstream);
+//        	      BufferedReader bufferedreader = new BufferedReader(inputstreamreader);
+        	  //input stream
+                DataInputStream input =
+                        new DataInputStream(sslsocket.getInputStream());
+                
+        	      //create buffered writer to send data to the server
+        	      OutputStream outputstream = sslsocket.getOutputStream();
+        	      OutputStreamWriter outputstreamwriter = new OutputStreamWriter(outputstream);
+        	      BufferedWriter bufferedwriter = new BufferedWriter(outputstreamwriter);
+
+        	      //read line from the console
+        	      while (true)
+        	      {//send data to the server
+        	        bufferedwriter.write("Hey im client in secure" + '\n');
+        	        bufferedwriter.flush();
+        	      }
+        	}
+        	catch (Exception exception)
+        	{
+        	  exception.printStackTrace();
+        	}
         }
     }
 
