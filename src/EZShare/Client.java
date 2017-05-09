@@ -116,13 +116,12 @@ public class Client {
         		//errors:	at sun.security.ssl.SSLSocketFactoryImpl.createSocket(SSLSocketFactoryImpl.java:88)
         	    SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket("localhost", 9999);
         	      
-        	      //create buffered reader to read input from the console
+        	     //create buffered reader to read input from the console
 //        	      InputStream inputstream = System.in;
 //        	      InputStreamReader inputstreamreader = new InputStreamReader(inputstream);
 //        	      BufferedReader bufferedreader = new BufferedReader(inputstreamreader);
-        	  //input stream
-                DataInputStream input =
-                        new DataInputStream(sslsocket.getInputStream());
+//        	    input stream
+                DataInputStream input = new DataInputStream(sslsocket.getInputStream());
                 
         	      //create buffered writer to send data to the server
         	      OutputStream outputstream = sslsocket.getOutputStream();
