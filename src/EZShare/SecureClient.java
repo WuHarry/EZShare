@@ -1,27 +1,36 @@
 package EZShare;
 
-import Connection.Connection;
-import JSON.JSONReader;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.logging.*;
+import java.util.List;
+import java.util.logging.Logger;
 
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-/**
- * Created by Yahang Wu on 2017/3/31.
- * COMP90015 Distributed System Project1 EZServer
- * The client main function
- * include establish the connection with the server
- * and send the command to the server in json string form
- */
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
-public class Client {
+import Connection.Connection;
+import JSON.JSONReader;
+
+public class SecureClient {
+	
 
     //ip and port
     private static String ip = "1.1.1.1";
@@ -103,7 +112,7 @@ public class Client {
             logger.warning("[ERROR] - Can not establish connection.");
         }}//end if(secure)
         else 
-        //for a secure connection
+        	//for a secure connection
         {
         	System.out.println("two sockets work");
         	try {
@@ -116,22 +125,24 @@ public class Client {
         		//errors:	at sun.security.ssl.SSLSocketFactoryImpl.createSocket(SSLSocketFactoryImpl.java:88)
         	    SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket("localhost", 9999);
         	      
-        	    //create buffered reader to read input from the console
+        	     //create buffered reader to read input from the console
 //        	      InputStream inputstream = System.in;
 //        	      InputStreamReader inputstreamreader = new InputStreamReader(inputstream);
 //        	      BufferedReader bufferedreader = new BufferedReader(inputstreamreader);
 //        	    input stream
                 DataInputStream input = new DataInputStream(sslsocket.getInputStream());
                 
-        	    //create buffered writer to send data to the server
-        	    OutputStream outputstream = sslsocket.getOutputStream();
-        	    OutputStreamWriter outputstreamwriter = new OutputStreamWriter(outputstream);
-        	    BufferedWriter bufferedwriter = new BufferedWriter(outputstreamwriter);
-        	     
-        	    //send data to the server
-        	    bufferedwriter.write("Hey im client in secure" + '\n');
-        	    bufferedwriter.flush();
-        	      
+        	      //create buffered writer to send data to the server
+        	      OutputStream outputstream = sslsocket.getOutputStream();
+        	      OutputStreamWriter outputstreamwriter = new OutputStreamWriter(outputstream);
+        	      BufferedWriter bufferedwriter = new BufferedWriter(outputstreamwriter);
+
+        	      //read line from the console
+        	   
+        	      //send data to the server
+        	        bufferedwriter.write("Hey im client in secure" + '\n');
+        	        bufferedwriter.flush();
+//        	        sslsocket.shutdownOutput();//shut down the output
         	}
         	catch (Exception exception)
         	{
