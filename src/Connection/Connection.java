@@ -94,6 +94,7 @@ public class Connection {
         options.addOption("uri", true, "resource URI");
         options.addOption("secure", false, "for SSL connection");
         options.addOption("sport", true, "for port number of SSL connection");
+        options.addOption("subscribe", false, "to subscribe to a server");
         
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
@@ -234,6 +235,11 @@ public class Connection {
 
             return commandObject.toString();
         }
+    /*    
+        if (cmd.hasOption("subscribe"))
+        {
+        	
+        }*/
 
         return null;
     }
