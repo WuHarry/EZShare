@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.net.ssl.SSLSocket;
+
 /**
  * Created by Yahang Wu on 2017/4/11.
  * COMP90015 Distributed System Project1 EZServer
@@ -55,6 +57,9 @@ class ServerControl {
             //output stream
             DataOutputStream output =
                     new DataOutputStream(clientSocket.getOutputStream());
+            
+            //InputStream inputStream = SSLSocket.getInputStream();
+            
 
             String jsonString;
             while (true) {
