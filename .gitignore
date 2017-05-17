@@ -21,8 +21,3 @@ hs_err_pid*
 /out
 /client_file/*
 /server_file/*
-
-src/EZShare/SecureServer.java
-src/EZShare/SecureServer.java
-serverKeyStore/serverKeystore.jks
-clientKeyStore/clientKeystore.jks
