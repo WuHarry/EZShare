@@ -4,8 +4,8 @@ import Connection.Connection;
 import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
-import exceptions.BrokenRuleException;
-import exceptions.InvalidResourceException;
+import Exceptions.BrokenRuleException;
+import Exceptions.InvalidResourceException;
 
 import java.util.Arrays;
 

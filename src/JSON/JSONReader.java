@@ -8,7 +8,7 @@ import Connection.Connection;
 import EZShare.Server;
 import com.google.gson.*;
 
-import exceptions.InvalidServerException;
+import Exceptions.InvalidServerException;
 
 /**
  * Created by Yahang Wu on 2017/3/31.

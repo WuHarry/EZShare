@@ -1,4 +1,4 @@
-package exceptions;
+package Exceptions;
 
 /**
  * Thrown when a resource supplied by a client contains incorrect information which cannot

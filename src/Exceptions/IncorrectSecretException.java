@@ -1,4 +1,4 @@
-package exceptions;
+package Exceptions;
 
 /**
  * Indicates that the secret a client uses in a command to the server does not match the

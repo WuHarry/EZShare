@@ -3,7 +3,7 @@ package EZShare;
 import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
-import exceptions.*;
+import Exceptions.*;
 
 import com.google.gson.JsonObject;
 

@@ -4,7 +4,7 @@ import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
 import com.google.gson.JsonObject;
-import exceptions.InvalidResourceException;
+import Exceptions.InvalidResourceException;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

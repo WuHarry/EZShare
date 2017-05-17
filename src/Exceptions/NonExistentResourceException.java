@@ -1,4 +1,4 @@
-package exceptions;
+package Exceptions;
 
 /**
  * Thrown when an operation is attempted on a resource which does not exist.

@@ -12,8 +12,8 @@ import java.util.logging.Logger;
 import Connection.Connection;
 import JSON.JSONReader;
 import com.google.gson.JsonObject;
-import exceptions.InvalidServerException;
-import exceptions.MissingComponentException;
+import Exceptions.InvalidServerException;
+import Exceptions.MissingComponentException;
 
 class Exchange {
 

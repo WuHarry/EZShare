@@ -6,8 +6,8 @@ import java.net.URISyntaxException;
 import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
-import exceptions.InvalidResourceException;
-import exceptions.NonExistentResourceException;
+import Exceptions.InvalidResourceException;
+import Exceptions.NonExistentResourceException;
 
 /**
  * @author Danni Zhao

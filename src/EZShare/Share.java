@@ -4,10 +4,10 @@ import Connection.Connection;
 import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
-import exceptions.BrokenRuleException;
-import exceptions.IncorrectSecretException;
-import exceptions.InvalidResourceException;
-import exceptions.MissingComponentException;
+import Exceptions.BrokenRuleException;
+import Exceptions.IncorrectSecretException;
+import Exceptions.InvalidResourceException;
+import Exceptions.MissingComponentException;
 
 import java.io.File;
 import java.net.URI;

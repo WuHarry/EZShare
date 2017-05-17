@@ -1,4 +1,4 @@
-package exceptions;
+package Exceptions;
 
 /**
  * Thrown when a server supplied by a client cannot be resolved

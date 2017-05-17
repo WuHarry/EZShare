@@ -3,8 +3,8 @@ package EZShare;
 import JSON.JSONReader;
 import Resource.HashDatabase;
 import Resource.Resource;
-import exceptions.InvalidResourceException;
-import exceptions.MissingComponentException;
+import Exceptions.InvalidResourceException;
+import Exceptions.MissingComponentException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
