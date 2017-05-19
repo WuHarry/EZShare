@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -55,10 +56,11 @@ class ServerControl {
             //output stream
             DataOutputStream output =
                     new DataOutputStream(clientSocket.getOutputStream());
-
             String jsonString;
+            //to check the input in a short period
+            clientSocket.setSoTimeout(20);
             while (true) {
-                if (input.available() > 0) {
+                try {
                     jsonString = input.readUTF();
                     logger.fine("[RECEIVE] - " + jsonString);
                     if (JSONReader.isJSONValid(jsonString)) {
@@ -202,10 +204,13 @@ class ServerControl {
                         output.flush();
                     }
 //                    System.out.println("Database size: " + db.getDatabaseSize());
+                } catch (SocketTimeoutException e){
+                    //just aimed to check the input is not empty
                 }
             }
         } catch (IOException ex) {
-            logger.warning(ex.getMessage());
+            //TODO: Try to fix the logger problem, when client disconnected, the logger will be triggered
+            logger.warning("Client disconnected.");
         }
     }
 

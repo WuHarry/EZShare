@@ -5,8 +5,15 @@ import JSON.JSONReader;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import javax.net.ssl.*;
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.logging.*;
 
@@ -54,25 +61,39 @@ public class Client {
         port = connection.port;
 
         //new client socket
-        try (Socket socket = new Socket(ip, port)) {
+        try {
+            Socket socket;
+            if (Connection.secureConnection) {
+//                //Location of the Java keystore file containing the collection of
+//                System.setProperty("javax.net.ssl.trustStore", "src/certifications/clientKeystore.jks");
+//                System.setProperty("javax.net.debug", "all");
+//                //Create SSL socket and connect it to the remote server
+//                SSLSocketFactory sslSocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+                socket = initSSL().createSocket(ip, 3781);
+//                socket = sslSocketfactory.createSocket(ip, 3781);
+            } else {
+                socket = new Socket(ip, port);
+            }
+
             //input stream
             DataInputStream input =
                     new DataInputStream(socket.getInputStream());
             //output stream
             DataOutputStream output =
                     new DataOutputStream(socket.getOutputStream());
-
             if (commandJsonString != null) {
                 output.writeUTF(commandJsonString);
+                System.out.println(commandJsonString);
                 if (Connection.debugSwitch) {
                     logger.info("Debug mode on");
                     logger.fine("[SENT] - " + commandJsonString);
                 }
                 output.flush();
             }
-
+            //to check the input in a short period
+            socket.setSoTimeout(20);
             while (true) {
-                if (input.available() > 0) {
+                try {
                     if (hasResources) {
                         downloadResources(input);
                     } else {
@@ -86,6 +107,8 @@ public class Client {
                         //check whether it is time to close connection
                         if (theEnd) break;
                     }
+                } catch (SocketTimeoutException e) {
+                    //just aimed to check weather the input is empty
                 }
             }
             socket.close();
@@ -189,5 +212,34 @@ public class Client {
      */
     private static int setChunkSize(long chunkSize) {
         return (int) chunkSize;
+    }
+
+    /**
+     * The method to initial SSL socket for client
+     * include reading the certifications and generate ssl socketFactory
+     *
+     * @return the initialed SSLSocketFactory
+     */
+    private static SSLSocketFactory initSSL() {
+        try {
+            SSLContext context = SSLContext.getInstance("SSL");
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+            KeyStore trustKeyStore = KeyStore.getInstance("JKS");
+
+            String password = "comp90015";
+            InputStream inputStream = Client.class.getResourceAsStream("/certifications/clientKeystore.jks");
+
+            trustKeyStore.load(inputStream, password.toCharArray());
+
+            trustManagerFactory.init(trustKeyStore);
+            context.init(null, trustManagerFactory.getTrustManagers(), null);
+
+            return context.getSocketFactory();
+
+        } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException | KeyManagementException e) {
+            logger.warning("Cannot load certifications for ssl connection.");
+            logger.warning("initial failed!");
+        }
+        return (SSLSocketFactory) SSLSocketFactory.getDefault();
     }
 }

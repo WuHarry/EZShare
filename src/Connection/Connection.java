@@ -27,6 +27,7 @@ public class Connection {
             Logger.getLogger(Connection.class.getName());
     //Debug Mode, true is on, false is off.
     public static boolean debugSwitch = false;
+    public static boolean secureConnection = false;
     public static String command = "";
 
     //Client
@@ -48,6 +49,7 @@ public class Connection {
     public String connectionIntervalLimit = "";
     public int exchangeInterval = 600;
     public int serverPort = 4000;
+    public int securePort = 3781;
     public String serverSecret = "";
 
     /**
@@ -86,6 +88,7 @@ public class Connection {
         options.addOption("share", false, "share resource on server");
         options.addOption("tags", true, "resource tags, tag1,tag2,tag3,...");
         options.addOption("uri", true, "resource URI");
+        options.addOption("secure", false, "initial the secure connection");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
@@ -110,6 +113,10 @@ public class Connection {
 
         if (cmd.hasOption("debug")) {
             debugSwitch = true;
+        }
+
+        if (cmd.hasOption("secure")) {
+            secureConnection = true;
         }
 
         if (cmd.hasOption("secret")) {
@@ -263,6 +270,7 @@ public class Connection {
         options.addOption("exchangeinterval", true,
                 "exchange interval in seconds");
         options.addOption("port", true, "server port, an integer");
+        options.addOption("sport", true, "set the secure port for the server, an integer");
         options.addOption("secret", true, "secret");
         options.addOption("debug", false, "print debug information");
 
@@ -282,6 +290,11 @@ public class Connection {
         if (cmd.hasOption("debug")) {
             debugSwitch = true;
             logger.info("debug mode on");
+        }
+
+        if (cmd.hasOption("sport")) {
+            securePort = Integer.parseInt(cmd.getOptionValue("sport"));
+            if (debugSwitch) logger.info("Secure port set to " + securePort);
         }
 
         if (cmd.hasOption("advertisedhostname")) {

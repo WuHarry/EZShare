@@ -4,8 +4,6 @@ import JSON.JSONReader;
 import Exceptions.InvalidResourceException;
 import Exceptions.MissingComponentException;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,7 +26,7 @@ class Common {
             InputStream config = Server.class.getResourceAsStream("/log/logger.properties");
             if(config == null) throw new Exception() ;
             LogManager.getLogManager().readConfiguration(config);
-
+            config.close();
         } catch (Exception e) {
             System.out.println("WARNING: Can not load log configuration file");
             System.out.println("WARNING: Logging not configured");

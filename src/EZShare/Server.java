@@ -2,11 +2,13 @@ package EZShare;
 
 import Connection.Connection;
 
-import javax.net.ServerSocketFactory;
+import javax.net.ssl.*;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -21,7 +23,7 @@ import java.util.logging.Logger;
 
 public class Server {
 
-    public static int port = 4000;
+    public static int port = 3781;
     private static int counter = 0;
     private static Logger logger = Logger.getLogger(Server.class.getName());
     public static List<InetSocketAddress> servers;
@@ -50,8 +52,10 @@ public class Server {
         Thread exchange = new Thread(() -> Exchange.serverExchange(connection.exchangeInterval * 1000, servers));
         exchange.start();
 
-        ServerSocketFactory factory = ServerSocketFactory.getDefault();
-        try (ServerSocket server = factory.createServerSocket(port)) {
+//        ServerSocketFactory factory = ServerSocketFactory.getDefault();
+//        try (ServerSocket server = factory.createServerSocket(port)) {
+        try{
+            SSLServerSocket server = (SSLServerSocket) initSSL().createServerSocket(3781);
             logger.info("Starting the Biubiubiu EZShare Server");
             logger.info("using secret: " + connection.serverSecret);
             logger.info("using advertised hostname: " + Connection.hostName);
@@ -60,6 +64,7 @@ public class Server {
 
             while (true) {
                 Socket client = server.accept();
+                //Socket client = server.accept();
                 counter++;
 
                 // Start a new thread for a connection
@@ -69,5 +74,34 @@ public class Server {
         } catch (IOException ex) {
             logger.warning(ex.getMessage());
         }
+    }
+
+    /**
+     * The method to initial SSL socket for client
+     * include reading the certifications and generate ssl socketFactory
+     *
+     * @return the initialed SSLSocketFactory
+     */
+    private static SSLServerSocketFactory initSSL(){
+        try{
+            SSLContext context = SSLContext.getInstance("SSL");
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+
+            String password = "comp90015";
+            InputStream inputStream = Server.class.getResourceAsStream("/certifications/serverKeystore.jks");
+
+            keyStore.load(inputStream,password.toCharArray());
+
+            keyManagerFactory.init(keyStore, password.toCharArray());
+            context.init(keyManagerFactory.getKeyManagers(),null,null);
+
+            return context.getServerSocketFactory();
+
+        } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException | KeyManagementException | UnrecoverableKeyException e) {
+            logger.warning("Cannot load certifications for ssl connection.");
+            logger.warning("initial failed!");
+        }
+        return (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
     }
 }
