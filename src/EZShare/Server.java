@@ -2,9 +2,11 @@ package EZShare;
 
 import Connection.Connection;
 
+import javax.net.ServerSocketFactory;
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.InetSocketAddress;
 import java.security.*;
@@ -23,10 +25,12 @@ import java.util.logging.Logger;
 
 public class Server {
 
-    public static int port = 3781;
-    private static int counter = 0;
+    public static int port = 4000;
+    private static int securePort = 3781;
     private static Logger logger = Logger.getLogger(Server.class.getName());
-    public static List<InetSocketAddress> servers;
+    private static String serverSecret = "";
+    static List<InetSocketAddress> servers;
+    static List<InetSocketAddress> secureServers;
 
     /**
      * The main function of the server
@@ -42,8 +46,10 @@ public class Server {
         //Get the configuration from the Json string
         Connection connection = new Connection();
         connection.serverCli(args);
-        //change port
+        //change port and secret
         port = connection.serverPort;
+        securePort = connection.securePort;
+        serverSecret = connection.serverSecret;
 
         //store server list
         List<InetSocketAddress> serverList = new ArrayList<InetSocketAddress>();
@@ -52,27 +58,60 @@ public class Server {
         Thread exchange = new Thread(() -> Exchange.serverExchange(connection.exchangeInterval * 1000, servers));
         exchange.start();
 
-//        ServerSocketFactory factory = ServerSocketFactory.getDefault();
-//        try (ServerSocket server = factory.createServerSocket(port)) {
-        try{
-            SSLServerSocket server = (SSLServerSocket) initSSL().createServerSocket(3781);
-            logger.info("Starting the Biubiubiu EZShare Server");
-            logger.info("using secret: " + connection.serverSecret);
-            logger.info("using advertised hostname: " + Connection.hostName);
-            logger.info("bound to port " + port);
-            logger.info("started");
+        NormalSocket normal = new NormalSocket();
+        SecureSocket secure = new SecureSocket();
+        Thread normalThread = new Thread(normal);
+        Thread secureThread = new Thread(secure);
+        normalThread.start();
+        secureThread.start();
+    }
 
-            while (true) {
-                Socket client = server.accept();
-                //Socket client = server.accept();
-                counter++;
+    static class NormalSocket implements Runnable {
 
-                // Start a new thread for a connection
-                Thread t = new Thread(() -> ServerControl.serverClient(client, connection.serverSecret, servers));
-                t.start();
+        @Override
+        public void run() {
+            ServerSocketFactory factory = ServerSocketFactory.getDefault();
+            try (ServerSocket server = factory.createServerSocket(port)) {
+                logger.info("Starting the Biubiubiu EZShare Server");
+                logger.info("using secret: " + serverSecret);
+                logger.info("using advertised hostname: " + Connection.hostName);
+                logger.info("bound to port " + port);
+                logger.info("started");
+
+                while (true) {
+                    Socket client = server.accept();
+
+                    // Start a new thread for a connection
+                    Thread t = new Thread(() -> ServerControl.serverClient(client, serverSecret, servers));
+                    t.start();
+                }
+            } catch (IOException ex) {
+                logger.warning(ex.getMessage());
             }
-        } catch (IOException ex) {
-            logger.warning(ex.getMessage());
+        }
+    }
+
+    static class SecureSocket implements Runnable {
+
+        @Override
+        public void run() {
+            try (SSLServerSocket server = (SSLServerSocket) initSSL().createServerSocket(securePort)) {
+                logger.info("Starting the Biubiubiu EZShare Server");
+                logger.info("using secret: " + serverSecret);
+                logger.info("using advertised hostname: " + Connection.hostName);
+                logger.info("bound to secure port " + securePort);
+                logger.info("started");
+
+                while (true) {
+                    Socket client = server.accept();
+
+                    // Start a new thread for a connection
+                    Thread t = new Thread(() -> ServerControl.serverClient(client, serverSecret, secureServers));
+                    t.start();
+                }
+            } catch (IOException ex) {
+                logger.warning(ex.getMessage());
+            }
         }
     }
 
@@ -82,8 +121,8 @@ public class Server {
      *
      * @return the initialed SSLSocketFactory
      */
-    private static SSLServerSocketFactory initSSL(){
-        try{
+    private static SSLServerSocketFactory initSSL() {
+        try {
             SSLContext context = SSLContext.getInstance("SSL");
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
             KeyStore keyStore = KeyStore.getInstance("JKS");
@@ -91,10 +130,10 @@ public class Server {
             String password = "comp90015";
             InputStream inputStream = Server.class.getResourceAsStream("/certifications/serverKeystore.jks");
 
-            keyStore.load(inputStream,password.toCharArray());
+            keyStore.load(inputStream, password.toCharArray());
 
             keyManagerFactory.init(keyStore, password.toCharArray());
-            context.init(keyManagerFactory.getKeyManagers(),null,null);
+            context.init(keyManagerFactory.getKeyManagers(), null, null);
 
             return context.getServerSocketFactory();
 

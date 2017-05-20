@@ -29,7 +29,7 @@ public class Client {
 
     //ip and port
     private static String ip = "1.1.1.1";
-    private static int port = 3000;
+    private static int port = 4000;
     //Mark whether next response from server has some file
     private static boolean hasResources = false;
     //Record the resource size if the resource is a file
@@ -56,22 +56,17 @@ public class Client {
         //get the command json string
         Connection connection = new Connection();
         String commandJsonString = connection.clientCli(args);
-        //update ip and port
+        //update ip
         ip = connection.host;
-        port = connection.port;
 
         //new client socket
         try {
             Socket socket;
             if (Connection.secureConnection) {
-//                //Location of the Java keystore file containing the collection of
-//                System.setProperty("javax.net.ssl.trustStore", "src/certifications/clientKeystore.jks");
-//                System.setProperty("javax.net.debug", "all");
-//                //Create SSL socket and connect it to the remote server
-//                SSLSocketFactory sslSocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-                socket = initSSL().createSocket(ip, 3781);
-//                socket = sslSocketfactory.createSocket(ip, 3781);
+                port = connection.securePort;
+                socket = initSSL().createSocket(ip, port);
             } else {
+                port = connection.port;
                 socket = new Socket(ip, port);
             }
 
