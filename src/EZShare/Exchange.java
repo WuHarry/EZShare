@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.logging.Logger;
@@ -62,7 +63,7 @@ class Exchange {
      * @param exchangeInterval the exchange time period
      * @param servers          the server's list
      */
-    static void serverExchange(int exchangeInterval, List<InetSocketAddress> servers) {
+    static void serverExchange(int exchangeInterval, List<InetSocketAddress> servers, boolean isSecure) {
 
         while (true) {
             try {
@@ -72,7 +73,14 @@ class Exchange {
                     int serverToShare = (int) (Math.random() * servers.size());
                     String serverIP = servers.get(serverToShare).getAddress().getHostName();
                     int serverPort = servers.get(serverToShare).getPort();
-                    try (Socket socket = new Socket(serverIP, serverPort)) {
+                    System.out.println("IP : " + serverIP + " Port: " + serverPort);
+                    try {
+                        Socket socket;
+                        if (isSecure){
+                            socket = Client.initSSL().createSocket(serverIP, serverPort);
+                        }else{
+                            socket = new Socket(serverIP, serverPort);
+                        }
                         //input stream
                         DataInputStream input =
                                 new DataInputStream(socket.getInputStream());
@@ -87,18 +95,19 @@ class Exchange {
                         output.flush();
 
                         while (true) {
-                            if (input.available() > 0) {
+                            try {
                                 String message = input.readUTF();
                                 logger.fine("[RECEIVE] - " + message);
                                 break;
+                            } catch (SocketTimeoutException e){
+                                //just aimed to check weather the input is empty
                             }
                         }
-                    } catch (UnknownHostException e) {
+                        socket.close();
+                    } catch (IOException e) {
                         servers.remove(serverToShare);
                         logger.info("Server " + serverIP + ":" + serverPort + " unreachable.");
                         logger.info("[REMOVE] - Removed server " + serverIP + ":" + serverPort);
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
                 }
             } catch (InterruptedException e) {

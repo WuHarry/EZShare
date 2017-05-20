@@ -32,6 +32,9 @@ public class Server {
     static List<InetSocketAddress> servers;
     static List<InetSocketAddress> secureServers;
 
+    private static boolean IS_SECURE = true;
+    private static boolean NOT_SECURE = false;
+
     /**
      * The main function of the server
      * establish the connection to the client
@@ -52,11 +55,14 @@ public class Server {
         serverSecret = connection.serverSecret;
 
         //store server list
-        List<InetSocketAddress> serverList = new ArrayList<InetSocketAddress>();
+        List<InetSocketAddress> serverList = new ArrayList<>();
         servers = java.util.Collections.synchronizedList(serverList);
+        secureServers = java.util.Collections.synchronizedList(serverList);
         //Start a thread to exchange server list
-        Thread exchange = new Thread(() -> Exchange.serverExchange(connection.exchangeInterval * 1000, servers));
+        Thread exchange = new Thread(() -> Exchange.serverExchange(connection.exchangeInterval * 10, servers, NOT_SECURE));
         exchange.start();
+        Thread secureExchange = new Thread(() -> Exchange.serverExchange(connection.exchangeInterval * 10, secureServers, IS_SECURE));
+        secureExchange.start();
 
         NormalSocket normal = new NormalSocket();
         SecureSocket secure = new SecureSocket();
@@ -96,7 +102,7 @@ public class Server {
         @Override
         public void run() {
             try (SSLServerSocket server = (SSLServerSocket) initSSL().createServerSocket(securePort)) {
-                logger.info("Starting the Biubiubiu EZShare Server");
+                logger.info("Starting the Biubiubiu EZShare Secure Server");
                 logger.info("using secret: " + serverSecret);
                 logger.info("using advertised hostname: " + Connection.hostName);
                 logger.info("bound to secure port " + securePort);

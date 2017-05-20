@@ -215,7 +215,7 @@ public class Client {
      *
      * @return the initialed SSLSocketFactory
      */
-    private static SSLSocketFactory initSSL() {
+    public static SSLSocketFactory initSSL() {
         try {
             SSLContext context = SSLContext.getInstance("SSL");
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
