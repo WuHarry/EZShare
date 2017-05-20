@@ -89,8 +89,7 @@ public class Connection {
         options.addOption("tags", true, "resource tags, tag1,tag2,tag3,...");
         options.addOption("uri", true, "resource URI");
         options.addOption("secure", false, "initial the secure connection");
-        options.addOption("sport", true, "set the secure port for the server, an integer");
-        
+
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
 
@@ -106,10 +105,6 @@ public class Connection {
 
         if (cmd.hasOption("host")) {
             host = cmd.getOptionValue("host");
-        }
-        //command line for -sport
-        if (cmd.hasOption("sport")) {
-        	securePort = Integer.parseInt(cmd.getOptionValue("sport"));
         }
 
         if (cmd.hasOption("port")) {
