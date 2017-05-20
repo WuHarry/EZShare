@@ -46,7 +46,7 @@ class ServerControl {
      * @param secret  the server's secret
      * @param servers List of servers the original server currently knows about
      */
-    static void serverClient(Socket client, String secret, List<InetSocketAddress> servers) {
+    static void serverClient(Socket client, String secret, List<InetSocketAddress> servers, boolean isSecure) {
 
         try (Socket clientSocket = client) {
             JSONReader newResource;
@@ -128,7 +128,7 @@ class ServerControl {
                             case QUERY:
                                 try {
                                     Common.checkNull(newResource);
-                                    Set<Resource> resources = Query.query(newResource, db);
+                                    Set<Resource> resources = Query.query(newResource, db, isSecure);
                                     if (resources == null) {
                                         output.writeUTF("{\"response\":\"success\"}");
                                         logger.fine("[SENT] - " + "{\"response\":\"success\"}");

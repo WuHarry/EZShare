@@ -33,7 +33,7 @@ class Query {
      * @return return all the resources that match the request
      * @throws InvalidResourceException If the resource supplied contains illegal fields, this is thrown.
      */
-    static Set<Resource> query(JSONReader resource, HashDatabase db) throws InvalidResourceException {
+    static Set<Resource> query(JSONReader resource, HashDatabase db, boolean isSecure) throws InvalidResourceException {
         String name = resource.getResourceName();
         String description = resource.getResourceDescription();
         String channel = resource.getResourceChannel();
@@ -80,7 +80,7 @@ class Query {
             hideOwner(resources);
             return resources;
         } else {
-            relay(resource, resources);
+            relay(resource, resources, isSecure);
             hideOwner(resources);
             return resources;
         }
@@ -97,7 +97,7 @@ class Query {
         }
     }
 
-    private static void relay(JSONReader resource, Set<Resource> resources) {
+    private static void relay(JSONReader resource, Set<Resource> resources, boolean isSecure) {
         String name;
         String description;
         List<String> tags;
@@ -117,7 +117,13 @@ class Query {
         for (InetSocketAddress s : Server.servers) {
             String ip = s.getAddress().getHostName();
             int port = s.getPort();
-            try (Socket socket = new Socket(ip, port)) {
+            try {
+                Socket socket;
+                if(isSecure){
+                    socket = Common.initClientSSL().createSocket(ip, port);
+                }else{
+                    socket = new Socket(ip, port);
+                }
                 //input stream
                 DataInputStream input =
                         new DataInputStream(socket.getInputStream());
@@ -128,7 +134,7 @@ class Query {
                 output.writeUTF(queryCommand.toString());
                 logger.fine("[SENT] - " + queryCommand.toString());
                 output.flush();
-
+                socket.setSoTimeout(20);
                 while (true) {
                     try {
                         String message = input.readUTF();

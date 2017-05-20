@@ -92,7 +92,7 @@ class Exchange {
                         output.writeUTF(serverList.toString());
                         logger.fine("[SENT] - " + serverList.toString());
                         output.flush();
-
+                        socket.setSoTimeout(20);
                         while (true) {
                             try {
                                 String message = input.readUTF();

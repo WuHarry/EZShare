@@ -75,6 +75,7 @@ public class Server {
 
     static class NormalSocket implements Runnable {
 
+        public final boolean isSecure = false;
         @Override
         public void run() {
             ServerSocketFactory factory = ServerSocketFactory.getDefault();
@@ -89,7 +90,7 @@ public class Server {
                     Socket client = server.accept();
 
                     // Start a new thread for a connection
-                    Thread t = new Thread(() -> ServerControl.serverClient(client, serverSecret, servers));
+                    Thread t = new Thread(() -> ServerControl.serverClient(client, serverSecret, servers, isSecure));
                     t.start();
                 }
             } catch (IOException ex) {
@@ -100,6 +101,7 @@ public class Server {
 
     static class SecureSocket implements Runnable {
 
+        public final boolean isSecure = true;
         @Override
         public void run() {
             try (SSLServerSocket server = (SSLServerSocket) initSSL().createServerSocket(securePort)) {
@@ -113,7 +115,7 @@ public class Server {
                     Socket client = server.accept();
 
                     // Start a new thread for a connection
-                    Thread t = new Thread(() -> ServerControl.serverClient(client, serverSecret, secureServers));
+                    Thread t = new Thread(() -> ServerControl.serverClient(client, serverSecret, secureServers, isSecure));
                     t.start();
                 }
             } catch (IOException ex) {
