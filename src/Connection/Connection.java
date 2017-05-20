@@ -90,7 +90,7 @@ public class Connection {
         options.addOption("tags", true, "resource tags, tag1,tag2,tag3,...");
         options.addOption("uri", true, "resource URI");
         options.addOption("secure", false, "initial the secure connection");
-        options.addOption("subscribe", false, "subscribe the server to receive new resources");
+        options.addOption("subscribe", true, "subscribe the server to receive new resources");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
@@ -119,10 +119,6 @@ public class Connection {
 
         if (cmd.hasOption("secure")) {
             secureConnection = true;
-        }
-
-        if (cmd.hasOption("id")) {
-            id = cmd.getOptionValue("id");
         }
 
         if (cmd.hasOption("secret")) {
@@ -236,6 +232,7 @@ public class Connection {
 
         if (cmd.hasOption("subscribe") && commandObject.get("command") == null) {
             command = "SUBSCRIBE";
+            id = cmd.getOptionValue("subscribe");
             commandObject.addProperty("command", command);
             commandObject.addProperty("relay", true);
             commandObject.addProperty("id", id);
