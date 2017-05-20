@@ -34,6 +34,7 @@ public class Connection {
     public String host = "1.1.1.1";
     public int port = 3000;
 
+    private String id = "";
     private String channel = "";
     private String description = "";
     private String name = "";
@@ -89,6 +90,7 @@ public class Connection {
         options.addOption("tags", true, "resource tags, tag1,tag2,tag3,...");
         options.addOption("uri", true, "resource URI");
         options.addOption("secure", false, "initial the secure connection");
+        options.addOption("subscribe", false, "subscribe the server to receive new resources");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
@@ -117,6 +119,10 @@ public class Connection {
 
         if (cmd.hasOption("secure")) {
             secureConnection = true;
+        }
+
+        if (cmd.hasOption("id")) {
+            id = cmd.getOptionValue("id");
         }
 
         if (cmd.hasOption("secret")) {
@@ -226,6 +232,16 @@ public class Connection {
             commandObject.add("resourceTemplate", resourceTemplate);
 
             return commandObject.toString();
+        }
+
+        if (cmd.hasOption("subscribe") && commandObject.get("command") == null) {
+            command = "SUBSCRIBE";
+            commandObject.addProperty("command", command);
+            commandObject.addProperty("relay", true);
+            commandObject.addProperty("id", id);
+            JsonObject resourceTemplate = new JsonObject();
+            resourceGenerator(resourceTemplate);
+            commandObject.add("resourceTemplate", resourceTemplate);
         }
 
         return null;

@@ -32,6 +32,7 @@ class ServerControl {
     private static final String QUERY = "QUERY";
     private static final String FETCH = "FETCH";
     private static final String EXCHANGE = "EXCHANGE";
+    private static final String SUBSCRIBE = "SUBSCRIBE";
 
     private static final HashDatabase db = new HashDatabase();
 

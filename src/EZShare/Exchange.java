@@ -73,7 +73,6 @@ class Exchange {
                     int serverToShare = (int) (Math.random() * servers.size());
                     String serverIP = servers.get(serverToShare).getAddress().getHostName();
                     int serverPort = servers.get(serverToShare).getPort();
-                    System.out.println("IP : " + serverIP + " Port: " + serverPort);
                     try {
                         Socket socket;
                         if (isSecure){
