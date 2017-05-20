@@ -59,9 +59,9 @@ public class Server {
         servers = java.util.Collections.synchronizedList(serverList);
         secureServers = java.util.Collections.synchronizedList(serverList);
         //Start a thread to exchange server list
-        Thread exchange = new Thread(() -> Exchange.serverExchange(connection.exchangeInterval * 10, servers, NOT_SECURE));
+        Thread exchange = new Thread(() -> Exchange.serverExchange(connection.exchangeInterval * 1000, servers, NOT_SECURE));
         exchange.start();
-        Thread secureExchange = new Thread(() -> Exchange.serverExchange(connection.exchangeInterval * 10, secureServers, IS_SECURE));
+        Thread secureExchange = new Thread(() -> Exchange.serverExchange(connection.exchangeInterval * 1000, secureServers, IS_SECURE));
         secureExchange.start();
 
         NormalSocket normal = new NormalSocket();

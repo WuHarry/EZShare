@@ -64,7 +64,7 @@ public class Client {
             Socket socket;
             if (Connection.secureConnection) {
                 port = connection.securePort;
-                socket = initSSL().createSocket(ip, port);
+                socket = Common.initClientSSL().createSocket(ip, port);
             } else {
                 port = connection.port;
                 socket = new Socket(ip, port);
@@ -207,34 +207,5 @@ public class Client {
      */
     private static int setChunkSize(long chunkSize) {
         return (int) chunkSize;
-    }
-
-    /**
-     * The method to initial SSL socket for client
-     * include reading the certifications and generate ssl socketFactory
-     *
-     * @return the initialed SSLSocketFactory
-     */
-    public static SSLSocketFactory initSSL() {
-        try {
-            SSLContext context = SSLContext.getInstance("SSL");
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
-            KeyStore trustKeyStore = KeyStore.getInstance("JKS");
-
-            String password = "comp90015";
-            InputStream inputStream = Client.class.getResourceAsStream("/certifications/clientKeystore.jks");
-
-            trustKeyStore.load(inputStream, password.toCharArray());
-
-            trustManagerFactory.init(trustKeyStore);
-            context.init(null, trustManagerFactory.getTrustManagers(), null);
-
-            return context.getSocketFactory();
-
-        } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException | KeyManagementException e) {
-            logger.warning("Cannot load certifications for ssl connection.");
-            logger.warning("initial failed!");
-        }
-        return (SSLSocketFactory) SSLSocketFactory.getDefault();
     }
 }

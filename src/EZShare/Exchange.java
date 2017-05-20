@@ -77,7 +77,7 @@ class Exchange {
                     try {
                         Socket socket;
                         if (isSecure){
-                            socket = Client.initSSL().createSocket(serverIP, serverPort);
+                            socket = Common.initClientSSL().createSocket(serverIP, serverPort);
                         }else{
                             socket = new Socket(serverIP, serverPort);
                         }

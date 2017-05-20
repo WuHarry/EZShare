@@ -4,10 +4,20 @@ import JSON.JSONReader;
 import Exceptions.InvalidResourceException;
 import Exceptions.MissingComponentException;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * Created by Yahang Wu on 2017/4/11.
@@ -16,6 +26,8 @@ import java.util.logging.LogManager;
  */
 
 class Common {
+
+    private static Logger logger = Logger.getLogger(Common.class.getName());
 
     /**
      * The method to load log properties file
@@ -102,5 +114,34 @@ class Common {
         } catch (URISyntaxException e) {
             throw new InvalidResourceException("Attempting to " + command + " resource with invalid uri syntax.");
         }
+    }
+
+    /**
+     * The method to initial SSL socket for client
+     * include reading the certifications and generate ssl socketFactory
+     *
+     * @return the initialed SSLSocketFactory
+     */
+    static SSLSocketFactory initClientSSL() {
+        try {
+            SSLContext context = SSLContext.getInstance("SSL");
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+            KeyStore trustKeyStore = KeyStore.getInstance("JKS");
+
+            String password = "comp90015";
+            InputStream inputStream = Client.class.getResourceAsStream("/certifications/clientKeystore.jks");
+
+            trustKeyStore.load(inputStream, password.toCharArray());
+
+            trustManagerFactory.init(trustKeyStore);
+            context.init(null, trustManagerFactory.getTrustManagers(), null);
+
+            return context.getSocketFactory();
+
+        } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException | KeyManagementException e) {
+            logger.warning("Cannot load certifications for ssl connection.");
+            logger.warning("initial failed!");
+        }
+        return (SSLSocketFactory) SSLSocketFactory.getDefault();
     }
 }
