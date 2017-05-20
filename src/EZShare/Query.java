@@ -11,6 +11,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -129,7 +130,7 @@ class Query {
                 output.flush();
 
                 while (true) {
-                    if (input.available() > 0) {
+                    try {
                         String message = input.readUTF();
                         logger.fine("[RECEIVE] - " + message);
                         JSONReader response = new JSONReader(message);
@@ -147,6 +148,8 @@ class Query {
                             Resource temp = new Resource(name, description, tags, uri, channel, owner, ezserver);
                             resources.add(temp);
                         }
+                    } catch (SocketTimeoutException e){
+                        //just aimed to check whether the input is empty
                     }
                 }
                 socket.close();

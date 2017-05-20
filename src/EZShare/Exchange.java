@@ -47,8 +47,8 @@ class Exchange {
             //Not sure if necessary, but ensures behaves as expected.
             synchronized (servers) {
                 if (!servers.contains(server) &&
-                        !server.getAddress().getHostName().equals(Connection.hostName) &&
-                        server.getPort() != Server.port) {
+                        (!server.getAddress().getHostName().equals(Connection.hostName) &&
+                        server.getPort() != Server.port)) {
                     servers.add(server);
                 }
             }

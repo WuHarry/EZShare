@@ -25,9 +25,10 @@ import java.util.logging.Logger;
 
 public class Server {
 
+    private static Logger logger = Logger.getLogger(Server.class.getName());
+
     public static int port = 4000;
     private static int securePort = 3781;
-    private static Logger logger = Logger.getLogger(Server.class.getName());
     private static String serverSecret = "";
     static List<InetSocketAddress> servers;
     static List<InetSocketAddress> secureServers;
