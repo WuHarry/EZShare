@@ -32,8 +32,8 @@ public class Server {
     static List<InetSocketAddress> servers;
     static List<InetSocketAddress> secureServers;
 
-    private static boolean IS_SECURE = true;
-    private static boolean NOT_SECURE = false;
+    private static final boolean IS_SECURE = true;
+    private static final boolean NOT_SECURE = false;
 
     /**
      * The main function of the server

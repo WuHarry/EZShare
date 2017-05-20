@@ -30,15 +30,9 @@ public class HashDatabase {
      */
     private class ChannelDB {
         private Map<String, Resource> uriMap;
-        private Map<String, List<Resource>> nameMap;
-        private Map<String, List<Resource>> descMap;
-        private Map<String, List<Resource>> ownerMap;
 
-        public ChannelDB() {
+        ChannelDB() {
             this.uriMap = new HashMap<String, Resource>();
-            this.nameMap = new HashMap<String, List<Resource>>();
-            this.descMap = new HashMap<String, List<Resource>>();
-            this.ownerMap = new HashMap<String, List<Resource>>();
         }
     }
 
@@ -111,56 +105,6 @@ public class HashDatabase {
     }
 
     /**
-     * @param channel Channel to search in.
-     * @param name    The name of the resource to search for.
-     * @return Collection of resources under the given name, or null if no resources have this name.
-     */
-    public Collection<Resource> nameLookup(String channel, String name) {
-        if (name == null || channel == null) {
-            throw new IllegalArgumentException("Cannot lookup resource by name when name is null.");
-        }
-        ChannelDB channelDB;
-        lock.readLock().lock();
-        try {
-            if (!this.db.containsKey(channel)) {
-                return null;
-            }
-            channelDB = this.db.get(channel);
-            if (!channelDB.nameMap.containsKey(name) || channelDB.nameMap.get(name).isEmpty()) {
-                return null;
-            }
-            return channelDB.nameMap.get(name);
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
-     * @param channel Channel to search in.
-     * @param desc    The description of the resource to search for.
-     * @return List of resources with the given description, or null if none are found.
-     */
-    public Collection<Resource> descLookup(String channel, String desc) {
-        if (desc == null || channel == null) {
-            throw new IllegalArgumentException("Cannot lookup resource by description when description is null.");
-        }
-        ChannelDB channelDB;
-        lock.readLock().lock();
-        try {
-            if (!this.db.containsKey(channel)) {
-                return null;
-            }
-            channelDB = this.db.get(channel);
-            if (!channelDB.descMap.containsKey(desc) || channelDB.descMap.get(desc).isEmpty()) {
-                return null;
-            }
-            return channelDB.descMap.get(desc);
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
      * @param channel The channel of the resource to search for.
      * @return List of resources in the given channel, or null if none exist.
      */
@@ -174,31 +118,6 @@ public class HashDatabase {
                 return null;
             }
             return this.db.get(channel).uriMap.values();
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
-     * @param channel Channel to search in.
-     * @param owner   The owner of the resource to search for.
-     * @return List of resources with given owner, or null if none exist.
-     */
-    public Collection<Resource> ownerLookup(String channel, String owner) {
-        if (owner == null) {
-            throw new IllegalArgumentException("Cannot lookup resource by owner when owner is null.");
-        }
-        ChannelDB channelDB;
-        lock.readLock().lock();
-        try {
-            if (!this.db.containsKey(channel)) {
-                return null;
-            }
-            channelDB = this.db.get(channel);
-            if (!channelDB.ownerMap.containsKey(owner) || channelDB.ownerMap.get(owner).isEmpty()) {
-                return null;
-            }
-            return channelDB.ownerMap.get(owner);
         } finally {
             lock.readLock().unlock();
         }
@@ -234,36 +153,6 @@ public class HashDatabase {
             channelDB.uriMap.put(res.getUri(), res);
             //update the size of the database
             size++;
-            if (channelDB.ownerMap.containsKey(res.getOwner())) {
-                temp = channelDB.ownerMap.get(res.getOwner());
-                if (temp.contains(res)) {
-                    temp.remove(res);
-                }
-                temp.add(res);
-            } else {
-                channelDB.ownerMap.put(res.getOwner(), temp = new ArrayList<Resource>());
-                temp.add(res);
-            }
-            if (channelDB.nameMap.containsKey(res.getName())) {
-                temp = channelDB.nameMap.get(res.getName());
-                if (temp.contains(res)) {
-                    temp.remove(res);
-                }
-                temp.add(res);
-            } else {
-                channelDB.nameMap.put(res.getName(), temp = new ArrayList<Resource>());
-                temp.add(res);
-            }
-            if (channelDB.descMap.containsKey(res.getDescription())) {
-                temp = channelDB.descMap.get(res.getDescription());
-                if (temp.contains(res)) {
-                    temp.remove(res);
-                }
-                temp.add(res);
-            } else {
-                channelDB.descMap.put(res.getDescription(), temp = new ArrayList<Resource>());
-                temp.add(res);
-            }
         } finally {
             lock.writeLock().unlock();
         }
@@ -284,15 +173,6 @@ public class HashDatabase {
             //delete from all maps.
             if (this.db.containsKey(res.getChannel())) {
                 channelDB = this.db.get(res.getChannel());
-                if (channelDB.descMap.containsKey(res.getDescription())) {
-                    channelDB.descMap.get(res.getDescription()).remove(res);
-                }
-                if (channelDB.nameMap.containsKey(res.getName())) {
-                    channelDB.nameMap.get(res.getName()).remove(res);
-                }
-                if (channelDB.ownerMap.containsKey(res.getOwner())) {
-                    channelDB.ownerMap.get(res.getOwner()).remove(res);
-                }
                 channelDB.uriMap.remove(res.getUri());
                 //update the size of the database
                 size--;

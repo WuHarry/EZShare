@@ -5,15 +5,9 @@ import JSON.JSONReader;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import javax.net.ssl.*;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.logging.*;
 
