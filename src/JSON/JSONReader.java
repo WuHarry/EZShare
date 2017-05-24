@@ -272,4 +272,10 @@ public class JSONReader {
             return false;
         }
     }
+    
+    public String getSubscriptionID(){
+    	if (object.get("id").isJsonNull()) return null;
+        return object.get("id").getAsString();
+    }
+    
 }

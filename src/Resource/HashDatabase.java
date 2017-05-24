@@ -2,6 +2,8 @@ package Resource;
 
 import Connection.Connection;
 import EZShare.Server;
+import EZShare.Subscriber;
+import EZShare.SubscriptionService;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,13 +19,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Created by Ryan Naughton 15/04/2017
  */
 
-public class HashDatabase {
+public class HashDatabase implements SubscriptionService<Resource> {
 
     private ReadWriteLock lock;
     //Maps channel to map of uri to resource.
     private Map<String, ChannelDB> db;
     private int size = 0;
-
+    private List<Subscriber<Resource>> subscribers;
+    
     /**
      * Internal class to separate resources by channel and allow
      * lookup within a channel by all fields.
@@ -153,6 +156,9 @@ public class HashDatabase {
             channelDB.uriMap.put(res.getUri(), res);
             //update the size of the database
             size++;
+            for(Subscriber<Resource> s: subscribers){
+            	s.notifySubscriber(res);
+            }
         } finally {
             lock.writeLock().unlock();
         }
@@ -190,4 +196,12 @@ public class HashDatabase {
     public int getDatabaseSize() {
         return this.size;
     }
+
+	@Override
+	public void subscribe(Subscriber<Resource> subscriber) {
+		lock.writeLock().lock();
+		subscribers.add(subscriber);
+		subscriber.notifySubscriber(this);
+		lock.writeLock().unlock();
+	}
 }

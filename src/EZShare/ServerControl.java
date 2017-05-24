@@ -48,6 +48,9 @@ class ServerControl {
      */
     static void serverClient(Socket client, String secret, List<InetSocketAddress> servers, boolean isSecure) {
 
+    	SubscriptionManager subManager = new SubscriptionManager();
+    	subManager.listenTo(db);
+    	
         try (Socket clientSocket = client) {
             JSONReader newResource;
             String command;
@@ -180,6 +183,26 @@ class ServerControl {
                                     missingResources(EXCHANGE, output);
                                 }
                                 break;
+                            case SUBSCRIBE:
+                            	try{
+                            		String id;
+                            		Common.checkNull(newResource);
+                            		if((id = newResource.getSubscriptionID()) == null){
+                            			throw new MissingComponentException("Missing id");
+                            		}
+                            		subManager.subscribe(newResource, clientSocket);
+                            		JsonObject message = new JsonObject();
+                            		message.addProperty("response", "success");
+                            		message.addProperty("id", id);
+                            		logger.info("Subscribed new client.");
+                            		output.writeUTF(message.toString());
+                            		logger.fine("[SENT] - " + message.toString());
+                            	}catch(InvalidResourceException e1){
+                            		throw new RuntimeException();
+                            	}catch(MissingComponentException e2){
+                            		throw new RuntimeException();
+                            	}
+                            	break;
                             default:
                                 JsonObject errorMessage = new JsonObject();
                                 errorMessage.addProperty("response", "error");
