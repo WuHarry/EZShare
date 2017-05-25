@@ -4,6 +4,7 @@ import Connection.Connection;
 import EZShare.Server;
 import EZShare.Subscriber;
 import EZShare.SubscriptionService;
+import JSON.JSONReader;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,13 +20,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Created by Ryan Naughton 15/04/2017
  */
 
-public class HashDatabase implements SubscriptionService<Resource> {
+public class HashDatabase implements SubscriptionService<Resource, JSONReader> {
 
     private ReadWriteLock lock;
     //Maps channel to map of uri to resource.
     private Map<String, ChannelDB> db;
     private int size = 0;
-    private List<Subscriber<Resource>> subscribers;
+    private List<Subscriber<Resource, JSONReader>> subscribers;
     
     /**
      * Internal class to separate resources by channel and allow
@@ -156,7 +157,7 @@ public class HashDatabase implements SubscriptionService<Resource> {
             channelDB.uriMap.put(res.getUri(), res);
             //update the size of the database
             size++;
-            for(Subscriber<Resource> s: subscribers){
+            for(Subscriber<Resource, JSONReader> s: subscribers){
             	s.notifySubscriber(res);
             }
         } finally {
@@ -198,10 +199,16 @@ public class HashDatabase implements SubscriptionService<Resource> {
     }
 
 	@Override
-	public void subscribe(Subscriber<Resource> subscriber) {
+	public void subscribe(Subscriber<Resource, JSONReader> subscriber) {
 		lock.writeLock().lock();
 		subscribers.add(subscriber);
 		subscriber.notifySubscriber(this);
 		lock.writeLock().unlock();
+	}
+
+	@Override
+	public List<Resource> query(JSONReader object) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -48,7 +48,7 @@ class ServerControl {
      */
     static void serverClient(Socket client, String secret, List<InetSocketAddress> servers, boolean isSecure) {
 
-    	SubscriptionManager subManager = new SubscriptionManager();
+    	SubscriptionManager subManager = new SubscriptionManager(servers, isSecure);
     	subManager.listenTo(db);
     	
         try (Socket clientSocket = client) {
@@ -190,7 +190,7 @@ class ServerControl {
                             		if((id = newResource.getSubscriptionID()) == null){
                             			throw new MissingComponentException("Missing id");
                             		}
-                            		subManager.subscribe(newResource, clientSocket);
+                            		subManager.subscribe(newResource, clientSocket, input, output);
                             		JsonObject message = new JsonObject();
                             		message.addProperty("response", "success");
                             		message.addProperty("id", id);
