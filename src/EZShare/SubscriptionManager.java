@@ -147,12 +147,10 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 								serverThread.start();
 							}
 						}catch(IOException e1){
-							//TODO: Do something if connections fail
 							if(socket != null){
 								socket.close();
 							}
 						}catch(FailedServerSubscriptionException e2){
-							//TODO: Do something if relay fails
 							if(socket != null){
 								socket.close();
 							}
@@ -178,18 +176,27 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 		for(Subscriber subscriber: subscribers){
 			for(JSONReader template: subscriber.resourceTemplates){
 				List<Resource> reply = subService.query(template);
-				send(subscriber.out, reply);
+				try {
+					send(subscriber.out, reply);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	}
 
 	@Override
-	public void notifySubscriber(Resource obj) {
+	public void notifySubscriber(Resource obj){
 		// TODO Auto-generated method stub
 		for(Subscriber subscriber: subscribers){
 			for(JSONReader template: subscriber.resourceTemplates){
 				if(match(template, obj)){
-					send(subscriber.out, obj);
+					try {
+						send(subscriber.out, obj);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -205,14 +212,15 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 		
 	}
 	
-	private void send(DataOutputStream out, List<Resource> resources){
+	private void send(DataOutputStream out, List<Resource> resources) throws IOException{
 		for(Resource resource: resources){
 			send(out, resource);
 		}
 	}
 	
-	private void send(DataOutputStream out, Resource res){
-		//TODO: transmit the supplied resource.
+	private void send(DataOutputStream out, Resource res) throws IOException{
+		out.writeUTF(res.toJsonObject().toString());
+		out.flush();
 	}
 	
 	private boolean match(JSONReader template, Resource resource){
