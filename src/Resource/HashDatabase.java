@@ -19,7 +19,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * by multiple threads simultaneously.
  * Created by Ryan Naughton 15/04/2017
  */
-
 public class HashDatabase implements SubscriptionService<Resource, JSONReader> {
 
     private ReadWriteLock lock;
@@ -208,7 +207,7 @@ public class HashDatabase implements SubscriptionService<Resource, JSONReader> {
 
 	@Override
 	public List<Resource> query(JSONReader object) {
-		// TODO Auto-generated method stub
+		// TODO Auto-generated method stub, query database.
 		return null;
 	}
 }

@@ -20,6 +20,10 @@ import Exceptions.InvalidResourceException;
 import JSON.JSONReader;
 import Resource.Resource;
 
+/**
+ * Manages subscriptions of clients and relaying to servers. Handles concurrent accesses.
+ *
+ */
 public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 
 	private ReadWriteLock lock;
@@ -30,6 +34,11 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 	private boolean isSecure;
 	private List<SubscriptionService<Resource, JSONReader>> services;
 	
+	/**
+	 * Encapsulates connection to server via a relayed subscription, which may send
+	 * hits to the SubscriptionManager.
+	 *
+	 */
 	private class ServerConnection{
 		public int subscriptions;
 		public DataInputStream input;
@@ -47,6 +56,10 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 		
 	}
 	
+	/**
+	 * Encapsulates connection to a subscriber which may send new subscriptions, and be transmitted 'hits'.
+	 *
+	 */
 	private class Subscriber{
 		public String id;
 		public DataInputStream in;
@@ -66,6 +79,12 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 		
 	}
 	
+	/**
+	 * Create a new SubscriptionManager with a list of servers used for relay and a flag indicating
+	 * whether SSL or insecure connections are used.
+	 * @param servers List of servers to be relayed to.
+	 * @param isSecure Flag which indicates whether connections are SSL or not.
+	 */
 	public SubscriptionManager(List<InetSocketAddress> servers, boolean isSecure) {
 		lock = new ReentrantReadWriteLock();
 		subscribers = new ArrayList<Subscriber>();
@@ -76,6 +95,10 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 		this.services = new ArrayList<SubscriptionService<Resource, JSONReader>>();
 	}
 	
+	/**
+	 * Adds db as a database SubscriptionManager is listening to.
+	 * @param db The SubscriptionService this SubjectManager should listen to.
+	 */
 	public void listenTo(SubscriptionService<Resource, JSONReader> db){
 		lock.writeLock().lock();
 		try{
@@ -86,6 +109,15 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 		}
 	}
 
+	/**
+	 * Subscribe the client with given details to receive any hits which match newResource's template.
+	 * @param newResource The resource template as a JSONReader object.
+	 * @param clientSocket The socket of the client subscribing.
+	 * @param input The DataInputStream of clientSocket. 
+	 * @param output The DataOutputStream of clientSocket.
+	 * @throws InvalidResourceException Resource template is invalid.
+	 * @throws IOException Networking error.
+	 */
 	public void subscribe(JSONReader newResource, Socket clientSocket, DataInputStream input, DataOutputStream output) throws InvalidResourceException, IOException{
 		lock.writeLock().lock();
 		try{
@@ -173,56 +205,95 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 
 	@Override
 	public void notifySubscriber(SubscriptionService<Resource, JSONReader> subService) {
-		for(Subscriber subscriber: subscribers){
-			for(JSONReader template: subscriber.resourceTemplates){
-				List<Resource> reply = subService.query(template);
-				try {
-					send(subscriber.out, reply);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+		lock.writeLock().lock();
+		try{
+			for(Subscriber subscriber: subscribers){
+				for(JSONReader template: subscriber.resourceTemplates){
+					List<Resource> reply = subService.query(template);
+					try {
+						send(subscriber.out, reply);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block, if exception connection broken.
+						e.printStackTrace();
+					}
 				}
 			}
+		}finally{
+			lock.writeLock().unlock();
 		}
 	}
 
 	@Override
 	public void notifySubscriber(Resource obj){
-		// TODO Auto-generated method stub
-		for(Subscriber subscriber: subscribers){
-			for(JSONReader template: subscriber.resourceTemplates){
-				if(match(template, obj)){
-					try {
-						send(subscriber.out, obj);
-					} catch (IOException e) {
-						e.printStackTrace();
+		lock.writeLock().lock();
+		try{
+			for(Subscriber subscriber: subscribers){
+				for(JSONReader template: subscriber.resourceTemplates){
+					if(match(template, obj)){
+						try {
+							send(subscriber.out, obj);
+						} catch (IOException e) {
+							//TODO: Connection broken, should do something.
+							e.printStackTrace();
+						}
 					}
 				}
 			}
+		}finally{
+			lock.writeLock().unlock();
 		}
 	}
 	
+	/**
+	 * TODO: Could probably just pass Subscriber.
+	 * Listen on subscriber socket for new messages (unsubscribe or new subscriptions).
+	 * @param clientSocket The socket subscriber uses.
+	 * @param input DataInputStream for this connection, in from subscriber.
+	 * @param output DataOutputStream for this connection, out to subscriber.
+	 */
 	private void listenToSubscriber(Socket clientSocket, DataInputStream input, DataOutputStream output){
 		//TODO: Listen for unsubscribe, then unsubscribe when command comes through. Listen for new Resource templates.
 		
 	}
 	
+	/**
+	 * Listen to a server for new hits.
+	 * @param sc The connection object to this server.
+	 */
 	private void listenToServer(ServerConnection sc){
 		//TODO: Listen for resources
 		
 	}
 	
+	/**
+	 * Sends all resources in list on out stream.
+	 * @param out The stream all resources are output to.
+	 * @param resources The resources to be transmitted.
+	 * @throws IOException If an I/O error occurs.
+	 */
 	private void send(DataOutputStream out, List<Resource> resources) throws IOException{
 		for(Resource resource: resources){
 			send(out, resource);
 		}
 	}
 	
+	/**
+	 * Send a single resource on out stream.
+	 * @param out Stream resource output to.
+	 * @param res Resource to be transmitted.
+	 * @throws IOException If an I/O error occurs.
+	 */
 	private void send(DataOutputStream out, Resource res) throws IOException{
 		out.writeUTF(res.toJsonObject().toString());
 		out.flush();
 	}
 	
+	/**
+	 * Returns true if resource matches the template, otherwise false.
+	 * @param template Resource template to be compared to resource.
+	 * @param resource The actual resource to determine if described by template.
+	 * @return True if template describes resource, false otherwise.
+	 */
 	private boolean match(JSONReader template, Resource resource){
 		//TODO: true if resource matches template.
 		return false;
