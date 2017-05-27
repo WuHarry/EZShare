@@ -219,10 +219,6 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 				connections.put(clientSocket, count+1);
 			}
 			subscribers.add(subscriber);
-			for(SubscriptionService<Resource,JSONReader> service: services){
-				List<Resource> resources = service.query(newResource);
-				send(subscriber,resources);
-			}
 		}finally{
 			lock.writeLock().unlock();
 		}
@@ -424,8 +420,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 			}catch(IOException e1){
 				Server.logger.warning("Lost connection to client.");
 			} catch (MissingComponentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// Server sent bad resource, do nothing.
 			}
 		}
 	}
