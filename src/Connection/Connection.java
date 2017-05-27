@@ -1,6 +1,5 @@
 package Connection;
 
-import JSON.JSONReader;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.apache.commons.cli.CommandLine;
@@ -34,8 +33,8 @@ public class Connection {
     //Client
     public String host = "1.1.1.1";
     public int port = 3000;
+    public String id = "";
 
-    private String id = "";
     private String channel = "";
     private String description = "";
     private String name = "";
@@ -115,7 +114,7 @@ public class Connection {
             port = Integer.parseInt(cmd.getOptionValue("port"));
         }
 
-        if(cmd.hasOption("id")){
+        if (cmd.hasOption("id")) {
             id = cmd.getOptionValue("id");
         }
 
@@ -266,19 +265,18 @@ public class Connection {
         resource.addProperty("ezserver", ezserver);
     }
 
-    public static String generateUnsubscribeMessage(String message){
-        String id = null;
-        if(JSONReader.isJSONValid(message)){
-            JSONReader clientCommand = new JSONReader(message);
-            id = clientCommand.getSubscriptionID();
-        }
-        if (id != null){
-            JsonObject unsubscribeMessage = new JsonObject();
-            unsubscribeMessage.addProperty("command", "UNSUBSCRIBE");
-            unsubscribeMessage.addProperty("id", id);
-            return unsubscribeMessage.toString();
-        }
-        return null;
+    /**
+     * Generate the unsubscribe message to the server
+     *
+     * @param id the client id
+     * @return the unsubscribe command json string
+     */
+    public static String generateUnsubscribeMessage(String id) {
+
+        JsonObject unsubscribeMessage = new JsonObject();
+        unsubscribeMessage.addProperty("command", "UNSUBSCRIBE");
+        unsubscribeMessage.addProperty("id", id);
+        return unsubscribeMessage.toString();
     }
 
     /**

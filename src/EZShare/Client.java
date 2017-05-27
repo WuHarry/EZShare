@@ -5,12 +5,10 @@ import JSON.JSONReader;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.awt.*;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Scanner;
 import java.util.logging.*;
 
@@ -67,6 +65,12 @@ public class Client {
                 socket = new Socket(ip, port);
             }
 
+            //update the id for subscribe if no id is read from command line
+            if (Connection.command.equals("SUBSCRIBE")) {
+                connection.id = ("" + socket.getLocalSocketAddress()).substring(1);
+                commandJsonString = connection.clientCli(args);
+            }
+
             //input stream
             DataInputStream input =
                     new DataInputStream(socket.getInputStream());
@@ -84,7 +88,7 @@ public class Client {
             }
             if (Connection.command.equals("SUBSCRIBE")) {
                 //listen to the client's console input
-                Thread listener = new Thread(() -> unsubscribe(commandJsonString, output));
+                Thread listener = new Thread(() -> unsubscribe(connection.id, output));
                 listener.start();
             }
             //to check the input in a short period
@@ -203,10 +207,17 @@ public class Client {
         }
     }
 
-    private static void unsubscribe(String message, DataOutputStream output) {
+    /**
+     * The unsubscribe method for the client, used to send the message to the
+     * server
+     *
+     * @param id     the client id
+     * @param output the output DataOutputStream
+     */
+    private static void unsubscribe(String id, DataOutputStream output) {
         if (readFromConsole()) {
             try {
-                String unsubscribeMessage = Connection.generateUnsubscribeMessage(message);
+                String unsubscribeMessage = Connection.generateUnsubscribeMessage(id);
                 if (unsubscribeMessage != null) {
                     output.writeUTF(unsubscribeMessage);
                     if (Connection.debugSwitch) {
@@ -220,11 +231,17 @@ public class Client {
         }
     }
 
+    /**
+     * The method to listen to the user's input in the console
+     *
+     * @return whether user input a "Enter"
+     */
     private static boolean readFromConsole() {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String next = scanner.nextLine();
             if (next.equals("\r") || next.equals("\n") || next.equals("")) {
+                scanner.close();
                 return true;
             }
         }

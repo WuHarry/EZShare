@@ -204,9 +204,9 @@ class ServerControl {
                             		throw new RuntimeException();
                             	}
                             	break;
-                            case UNSUBSCRIBE:
-                                
-                                break;
+//                            case UNSUBSCRIBE:
+//
+//                                break;
                             default:
                                 JsonObject errorMessage = new JsonObject();
                                 errorMessage.addProperty("response", "error");
