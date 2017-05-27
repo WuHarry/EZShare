@@ -22,6 +22,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class HashDatabase implements SubscriptionService<Resource, JSONReader> {
 
     private ReadWriteLock lock;
+    private ReadWriteLock subscribeLock;
     //Maps channel to map of uri to resource.
     private Map<String, ChannelDB> db;
     private int size = 0;
@@ -44,8 +45,10 @@ public class HashDatabase implements SubscriptionService<Resource, JSONReader> {
      */
     public HashDatabase() {
         lock = new ReentrantReadWriteLock();
+        subscribeLock = new ReentrantReadWriteLock();
         this.db = new HashMap<String, ChannelDB>();
-
+        this.subscribers = new ArrayList<Subscriber<Resource, JSONReader>>();
+        
         //Add a new query
         List<String> tags = new ArrayList<String>();
         tags.add("jpg");
@@ -157,13 +160,16 @@ public class HashDatabase implements SubscriptionService<Resource, JSONReader> {
             channelDB.uriMap.put(res.getUri(), res);
             //update the size of the database
             size++;
-//            if(!subscribers.isEmpty()){
-//                for(Subscriber<Resource, JSONReader> s: subscribers){
-//                    s.notifySubscriber(res);
-//                }
-//            }
         } finally {
             lock.writeLock().unlock();
+        }
+        subscribeLock.readLock().lock();
+        try{
+//            for(Subscriber<Resource, JSONReader> s: subscribers){
+//          	  s.notifySubscriber(res);
+//      	  }
+        }finally{
+        	subscribeLock.readLock().unlock();
         }
     }
 
@@ -202,10 +208,13 @@ public class HashDatabase implements SubscriptionService<Resource, JSONReader> {
 
 	@Override
 	public void subscribe(Subscriber<Resource, JSONReader> subscriber) {
-		lock.writeLock().lock();
-		subscribers.add(subscriber);
-		subscriber.notifySubscriber(this);
-		lock.writeLock().unlock();
+		subscribeLock.writeLock().lock();
+		try{
+			subscribers.add(subscriber);
+		}finally{
+			subscribeLock.writeLock().unlock();
+		}
+		subscriber.notifySubscriber(this);		
 	}
 
 	@Override
