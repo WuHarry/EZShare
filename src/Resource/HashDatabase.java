@@ -1,16 +1,22 @@
 package Resource;
 
 import Connection.Connection;
+import EZShare.Common;
+import EZShare.Query;
 import EZShare.Server;
 import EZShare.Subscriber;
 import EZShare.SubscriptionService;
+import Exceptions.InvalidResourceException;
 import JSON.JSONReader;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -218,8 +224,50 @@ public class HashDatabase implements SubscriptionService<Resource, JSONReader> {
 	}
 
 	@Override
-	public List<Resource> query(JSONReader object) {
-		// TODO Auto-generated method stub, query database.
-		return null;
+	public List<Resource> query(JSONReader resource) throws InvalidResourceException {
+		String name = resource.getResourceName();
+        String description = resource.getResourceDescription();
+        String channel = resource.getResourceChannel();
+        String owner = resource.getResourceOwner();
+        String uri = resource.getResourceUri();
+        String[] tags = resource.getResourceTags();
+        boolean relay = resource.getRelay();
+
+        Set<Resource> resources = new HashSet<Resource>();
+
+        //Check strings etc. are valid
+        if (!Common.validateResource(name, description, tags, uri, channel, owner)) {
+            throw new InvalidResourceException("Trying to query Resource with illegal fields.");
+        }
+
+        String tag = "";
+        for (String t : tags) {
+            tag += t;
+        }
+        if (channelLookup(channel) == null) return null;
+        resources.addAll(channelLookup(channel));
+        //remove owner doesn't match
+        if (!owner.equals("")) {
+            resources.removeIf(resource1 -> !resource1.getOwner().equals(owner));
+        }
+        //remove tags doesn't match
+        if (!tag.equals("")) {
+            resources.removeIf(resource1 -> !Arrays.equals(resource1.getTags().toArray(), tags));
+        }
+        //remove uri doesn't match
+        if (!uri.equals("")) {
+            resources.removeIf(resource1 -> !resource1.getUri().equals(uri));
+        }
+        //remove name doesn't match
+        if (!name.equals("")) {
+            resources.removeIf(resource1 -> !resource1.getName().contains(name));
+        }
+        //remove description doesn't match
+        if (!description.equals("")) {
+            resources.removeIf(resource1 -> !resource1.getDescription().contains(description));
+        }
+
+        Query.hideOwner(resources);
+        return new ArrayList<Resource>(resources);
 	}
 }

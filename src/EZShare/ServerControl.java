@@ -49,8 +49,8 @@ class ServerControl {
      */
     static void serverClient(Socket client, String secret, List<InetSocketAddress> servers, boolean isSecure) {
 
-    	//SubscriptionManager subManager = new SubscriptionManager(servers, isSecure);
-    	//subManager.listenTo(db);
+    	SubscriptionManager subManager = new SubscriptionManager(servers, isSecure);
+    	subManager.listenTo(db);
     	
         try (Socket clientSocket = client) {
             JSONReader newResource;
@@ -184,7 +184,7 @@ class ServerControl {
                                     missingResources(EXCHANGE, output);
                                 }
                                 break;
-                            /*case SUBSCRIBE:
+                            case SUBSCRIBE:
                             	try{
                             		String id;
                             		Common.checkNull(newResource);
@@ -203,7 +203,7 @@ class ServerControl {
                             	}catch(MissingComponentException e2){
                             		throw new RuntimeException();
                             	}
-                            	break;*/
+                            	break;
 //                            case UNSUBSCRIBE:
 //
 //                                break;

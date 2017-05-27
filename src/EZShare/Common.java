@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  * It is the configuration class, mainly provide the method to load log config.
  */
 
-class Common {
+public class Common {
 
     private static Logger logger = Logger.getLogger(Common.class.getName());
 
@@ -69,7 +69,7 @@ class Common {
      * @return return true if the resource is valid,
      * false if the resource is invalid
      */
-    static boolean validateResource(String name, String desc, String[] tags, String uri,
+    public static boolean validateResource(String name, String desc, String[] tags, String uri,
                                     String channel, String owner) {
         if (!(validateString(name) && validateString(desc) && validateString(channel) &&
                 validateString(owner) && validateString(uri))) {

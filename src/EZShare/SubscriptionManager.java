@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +19,7 @@ import com.google.gson.JsonParser;
 
 import Exceptions.FailedServerSubscriptionException;
 import Exceptions.InvalidResourceException;
+import Exceptions.MissingComponentException;
 import JSON.JSONReader;
 import Resource.Resource;
 
@@ -26,6 +29,9 @@ import Resource.Resource;
  */
 public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 
+	private static final String SUBSCRIBE = "SUBSCRIBE";
+	private static final String UNSUBSCRIBE = "UNSUBSCRIBE";
+	
 	private ReadWriteLock lock;
 	private List<Subscriber> subscribers;
 	private Map<String, Thread> subscriberThreads;
@@ -135,58 +141,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 				//relay to all servers in server list
 				synchronized(this.servers){
 					for(InetSocketAddress i: servers){
-						Socket socket = null;
-						try{
-							DataOutputStream os = null;
-							ServerConnection conn;
-							Thread serverThread = null;
-							if(!serverConnections.containsKey(i)){
-								//Set up new server connection
-								int subs = 1;
-								if(this.isSecure == true){
-									//create secure socket
-									socket = Common.initClientSSL().createSocket(i.getHostName(), i.getPort());
-								}else{
-									//create insecure socket
-									socket = new Socket(i.getHostName(), i.getPort());
-								}
-								DataInputStream in = new DataInputStream(socket.getInputStream());
-								DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-								conn = new ServerConnection(subs, in, out, null, socket);
-								serverThread = new Thread(()->listenToServer(conn));
-								conn.thread = serverThread;
-							}else{
-								(conn = serverConnections.get(i)).subscriptions++;
-								os = conn.output;
-							}
-							//Submit subscription request to server.
-							JsonObject command = newResource.getJsonObject();
-							os.writeUTF(command.toString());
-							os.flush();
-							String response = conn.input.readUTF();
-							if(JSONReader.isJSONValid(response)){
-								JsonParser parse = new JsonParser();
-						        JsonObject reply = (JsonObject) parse.parse(response);
-						        if((!reply.has("response")) || reply.get("response").getAsString() != "success"){
-						          	//failed, throw exception.
-						           	throw new FailedServerSubscriptionException();
-						        }
-							}else{
-								throw new IOException();
-							}
-							if(serverThread != null){
-								this.serverConnections.put(i, conn);
-								serverThread.start();
-							}
-						}catch(IOException e1){
-							if(socket != null){
-								socket.close();
-							}
-						}catch(FailedServerSubscriptionException e2){
-							if(socket != null){
-								socket.close();
-							}
-						}
+						openConnection(i, newResource);
 					}
 				}
 			}
@@ -209,7 +164,13 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 		try{
 			for(Subscriber subscriber: subscribers){
 				for(JSONReader template: subscriber.resourceTemplates){
-					List<Resource> reply = subService.query(template);
+					List<Resource> reply = Collections.emptyList();
+					try {
+						reply = subService.query(template);
+					} catch (InvalidResourceException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					try {
 						send(subscriber.out, reply);
 					} catch (IOException e) {
@@ -253,7 +214,44 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 	 */
 	private void listenToSubscriber(Socket clientSocket, DataInputStream input, DataOutputStream output){
 		//TODO: Listen for unsubscribe, then unsubscribe when command comes through. Listen for new Resource templates.
-		
+		boolean running = true;
+		while(running){
+			try{
+				String message = input.readUTF();
+				if(JSONReader.isJSONValid(message)){
+					JSONReader command = new JSONReader(message);
+					switch(command.getCommand()){
+					case SUBSCRIBE:
+						Common.checkNull(command);
+						String id;
+						if((id = command.getSubscriptionID()) == null){
+							throw new MissingComponentException("Missing ID");
+						}
+						this.subscribe(command, clientSocket, input, output);
+						JsonObject reply = new JsonObject();
+						reply.addProperty("response", "success");
+						reply.addProperty("id", id);
+						Server.logger.info("Subscribed new client: " + id + ".");
+						output.writeUTF(reply.toString());
+                		Server.logger.fine("[SENT] - " + reply.toString());
+						break;
+					case UNSUBSCRIBE:
+						running = false;
+						break;
+					default:
+						break;
+					}
+				}
+			}catch(IOException e1){
+				
+			} catch (MissingComponentException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			} catch (InvalidResourceException e3) {
+				// TODO Auto-generated catch block
+				e3.printStackTrace();
+			}
+		}
 	}
 	
 	/**
@@ -262,7 +260,29 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 	 */
 	private void listenToServer(ServerConnection sc){
 		//TODO: Listen for resources
-		
+		boolean running = true;
+		while(running){
+			try{
+				String message = sc.input.readUTF();
+				if(JSONReader.isJSONValid(message)){
+					JSONReader resource = new JSONReader(message);
+					if(resource.getResources() != null){
+						//Resource present, read in resource and notify to find client/s interested.
+						Common.checkNull(resource);
+						Resource newResource = new Resource(resource.getResourceName(), resource.getResourceDescription(),
+								                            Arrays.asList(resource.getResourceTags()),
+								                            resource.getResourceUri(), resource.getResourceChannel(),
+								                            resource.getResourceOwner(), resource.getResourceEZserver());
+						this.notifySubscriber(newResource);
+					}
+				}
+			}catch(IOException e1){
+				e1.printStackTrace();
+			} catch (MissingComponentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	/**
@@ -299,4 +319,59 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 		return false;
 	}
 
+	private void openConnection(InetSocketAddress server, JSONReader newResource) throws IOException{
+		Socket socket = null;
+		try{
+			DataOutputStream os = null;
+			ServerConnection conn;
+			Thread serverThread = null;
+			if(!serverConnections.containsKey(server)){
+				//Set up new server connection
+				int subs = 1;
+				if(this.isSecure == true){
+					//create secure socket
+					socket = Common.initClientSSL().createSocket(server.getHostName(), server.getPort());
+				}else{
+					//create insecure socket
+					socket = new Socket(server.getHostName(), server.getPort());
+				}
+				DataInputStream in = new DataInputStream(socket.getInputStream());
+				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+				conn = new ServerConnection(subs, in, out, null, socket);
+				serverThread = new Thread(()->listenToServer(conn));
+				conn.thread = serverThread;
+			}else{
+				(conn = serverConnections.get(server)).subscriptions++;
+				os = conn.output;
+			}
+			//Submit subscription request to server.
+			JsonObject command = newResource.getJsonObject();
+			os.writeUTF(command.toString());
+			os.flush();
+			String response = conn.input.readUTF();
+			if(JSONReader.isJSONValid(response)){
+				JsonParser parse = new JsonParser();
+		        JsonObject reply = (JsonObject) parse.parse(response);
+		        if((!reply.has("response")) || reply.get("response").getAsString() != "success"){
+		          	//failed, throw exception.
+		           	throw new FailedServerSubscriptionException();
+		        }
+			}else{
+				throw new IOException();
+			}
+			if(serverThread != null){
+				this.serverConnections.put(server, conn);
+				serverThread.start();
+			}
+		}catch(IOException e1){
+			if(socket != null){
+				socket.close();
+			}
+		}catch(FailedServerSubscriptionException e2){
+			if(socket != null){
+				socket.close();
+			}
+		}
+	}
+	
 }

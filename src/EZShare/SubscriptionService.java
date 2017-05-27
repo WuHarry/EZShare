@@ -1,6 +1,8 @@
 package EZShare;
 
 import java.util.List;
+
+import Exceptions.InvalidResourceException;
 /**
  * A subscription service allowing subscribers to ask for notifications and query for a particular object in the database.
  *
@@ -19,7 +21,8 @@ public interface SubscriptionService<T, Q> {
 	 * 
 	 * @param object
 	 * @return
+	 * @throws InvalidResourceException The query describes an invalid database object. 
 	 */
-	public List<T> query(Q object);
+	public List<T> query(Q object) throws InvalidResourceException;
 	
 }

@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 
 public class Server {
 
-    private static Logger logger = Logger.getLogger(Server.class.getName());
+    public static Logger logger = Logger.getLogger(Server.class.getName());
 
     public static int port = 4000;
     private static int securePort = 3781;

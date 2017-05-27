@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  * COMP90015 Distributed System Project1 EZServer
  * Server query function to query resources
  */
-class Query {
+public class Query {
 
     private static Logger logger = Logger.getLogger(Query.class.getName());
 
@@ -91,7 +91,7 @@ class Query {
      *
      * @param resources the response resources
      */
-    private static void hideOwner(Set<Resource> resources) {
+    public static void hideOwner(Set<Resource> resources) {
         for (Resource r : resources) {
             if (!r.getOwner().equals("")) r.setOwner("*");
         }
