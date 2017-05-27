@@ -426,7 +426,6 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 	
 	/**
 	 * Sends all resources in list on out stream.
-	 * @param out The stream all resources are output to.
 	 * @param resources The resources to be transmitted.
 	 * @throws IOException If an I/O error occurs.
 	 */
@@ -438,7 +437,6 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 	
 	/**
 	 * Send a single resource on out stream.
-	 * @param out Stream resource output to.
 	 * @param res Resource to be transmitted.
 	 * @throws IOException If an I/O error occurs.
 	 */
