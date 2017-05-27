@@ -219,8 +219,7 @@ public class HashDatabase implements SubscriptionService<Resource, JSONReader> {
 			subscribers.add(subscriber);
 		}finally{
 			subscribeLock.writeLock().unlock();
-		}
-		subscriber.notifySubscriber(this);		
+		}	
 	}
 
 	@Override

@@ -77,8 +77,9 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 		public Socket socket;
 		public List<JSONReader> resourceTemplates;
 		public int hits;
+		public boolean relay;
 		
-		public Subscriber(String id, DataInputStream in, DataOutputStream out, Thread listenerThread, Socket socket){
+		public Subscriber(String id, DataInputStream in, DataOutputStream out, Thread listenerThread, Socket socket, boolean relay){
 			this.id = id;
 			this.in = in;
 			this.out = out;
@@ -86,6 +87,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 			this.socket = socket;
 			this.resourceTemplates = new ArrayList<JSONReader>();
 			this.hits = 0;
+			this.relay = relay;
 		}
 
 		@Override
@@ -158,6 +160,19 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 			lock.writeLock().unlock();
 		}
 	}
+	
+	public void newServer(InetSocketAddress server){
+		for(Subscriber subscriber: subscribers){
+			if(subscriber.relay == true){
+				for(JSONReader template: subscriber.resourceTemplates)
+					try {
+						this.openConnection(server, template);
+					} catch (IOException e) {
+						Server.logger.warning("Could not connect to server");
+					}
+			}
+		}
+	}
 
 	/**
 	 * Subscribe the client with given details to receive any hits which match newResource's template.
@@ -182,7 +197,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 				//Start new thread for listening to unsubscribe, then returns and finishes original thread.
 				listenThread = new Thread(()->listenToSubscriber(clientSocket, input, output));
 			}
-			Subscriber subscriber = new Subscriber(newResource.getSubscriptionID(), input, output, listenThread, clientSocket);
+			Subscriber subscriber = new Subscriber(newResource.getSubscriptionID(), input, output, listenThread, clientSocket, newResource.getRelay());
 			subscriber.resourceTemplates.add(newResource);
 			if(newResource.getRelay() == true){
 				//relay to all servers in server list

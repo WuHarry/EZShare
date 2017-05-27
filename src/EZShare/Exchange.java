@@ -28,7 +28,7 @@ class Exchange {
      * @throws MissingComponentException throws when the serverList received is null
      * @throws InvalidServerException    throws when the serverList contains unresolved server
      */
-    static void exchange(JSONReader resource, List<InetSocketAddress> servers) throws MissingComponentException, InvalidServerException {
+    static void exchange(JSONReader resource, List<InetSocketAddress> servers, SubscriptionManager sm) throws MissingComponentException, InvalidServerException {
 
         //To conform with other command structure, move outside to Common method
         List<InetSocketAddress> serverList = resource.getServerList();
@@ -49,6 +49,7 @@ class Exchange {
                         (!server.getAddress().getHostName().equals(Connection.hostName) &&
                         server.getPort() != Server.port)) {
                     servers.add(server);
+                    sm.newServer(server);
                 }
             }
         }
