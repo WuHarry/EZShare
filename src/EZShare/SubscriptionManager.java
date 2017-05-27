@@ -347,6 +347,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 			} catch(IOException e4){
 				//Do something, connection ended
 				e4.printStackTrace();
+				throw new RuntimeException();
 			}
 		}
 	}
@@ -376,6 +377,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 				}
 			}catch(IOException e1){
 				e1.printStackTrace();
+				throw new RuntimeException();
 			} catch (MissingComponentException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

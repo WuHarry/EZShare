@@ -51,8 +51,10 @@ class ServerControl {
     	SubscriptionManager subManager = new SubscriptionManager(servers, isSecure);
     	subManager.listenTo(db);
     	
-        try (Socket clientSocket = client) {
-            JSONReader newResource;
+        try {
+        	Socket clientSocket = client;
+            boolean running = true;
+        	JSONReader newResource;
             String command;
             //input stream
             DataInputStream input =
@@ -63,7 +65,7 @@ class ServerControl {
             String jsonString;
             //to check the input in a short period
             clientSocket.setSoTimeout(20);
-            while (true) {
+            while (running) {
                 try {
                     jsonString = input.readUTF();
                     logger.fine("[RECEIVE] - " + jsonString);
@@ -197,15 +199,13 @@ class ServerControl {
                             		logger.info("Subscribed new client.");
                             		output.writeUTF(message.toString());
                             		logger.fine("[SENT] - " + message.toString());
+                            		running = false;
                             	}catch(InvalidResourceException e1){
                             		throw new RuntimeException();
                             	}catch(MissingComponentException e2){
                             		throw new RuntimeException();
                             	}
                             	break;
-//                            case UNSUBSCRIBE:
-//
-//                                break;
                             default:
                                 JsonObject errorMessage = new JsonObject();
                                 errorMessage.addProperty("response", "error");
