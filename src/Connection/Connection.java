@@ -1,5 +1,6 @@
 package Connection;
 
+import JSON.JSONReader;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.apache.commons.cli.CommandLine;
@@ -90,7 +91,8 @@ public class Connection {
         options.addOption("tags", true, "resource tags, tag1,tag2,tag3,...");
         options.addOption("uri", true, "resource URI");
         options.addOption("secure", false, "initial the secure connection");
-        options.addOption("subscribe", true, "subscribe the server to receive new resources");
+        options.addOption("subscribe", false, "subscribe the server to receive new resources");
+        options.addOption("id", true, "id in the subscribe");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
@@ -99,8 +101,8 @@ public class Connection {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
             //help(options);
-            logger.warning("Wrong command line input;");
-            System.out.println("Wrong command line input;");
+            logger.warning("Wrong command line input!");
+            System.out.println("Wrong command line input!");
         }
 
         assert cmd != null;
@@ -111,6 +113,10 @@ public class Connection {
 
         if (cmd.hasOption("port")) {
             port = Integer.parseInt(cmd.getOptionValue("port"));
+        }
+
+        if(cmd.hasOption("id")){
+            id = cmd.getOptionValue("id");
         }
 
         if (cmd.hasOption("debug")) {
@@ -232,13 +238,14 @@ public class Connection {
 
         if (cmd.hasOption("subscribe") && commandObject.get("command") == null) {
             command = "SUBSCRIBE";
-            id = cmd.getOptionValue("subscribe");
             commandObject.addProperty("command", command);
             commandObject.addProperty("relay", true);
             commandObject.addProperty("id", id);
             JsonObject resourceTemplate = new JsonObject();
             resourceGenerator(resourceTemplate);
             commandObject.add("resourceTemplate", resourceTemplate);
+
+            return commandObject.toString();
         }
 
         return null;
@@ -257,6 +264,21 @@ public class Connection {
         resource.addProperty("channel", channel);
         resource.addProperty("owner", owner);
         resource.addProperty("ezserver", ezserver);
+    }
+
+    public static String generateUnsubscribeMessage(String message){
+        String id = null;
+        if(JSONReader.isJSONValid(message)){
+            JSONReader clientCommand = new JSONReader(message);
+            id = clientCommand.getSubscriptionID();
+        }
+        if (id != null){
+            JsonObject unsubscribeMessage = new JsonObject();
+            unsubscribeMessage.addProperty("command", "UNSUBSCRIBE");
+            unsubscribeMessage.addProperty("id", id);
+            return unsubscribeMessage.toString();
+        }
+        return null;
     }
 
     /**

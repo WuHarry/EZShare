@@ -33,6 +33,7 @@ class ServerControl {
     private static final String FETCH = "FETCH";
     private static final String EXCHANGE = "EXCHANGE";
     private static final String SUBSCRIBE = "SUBSCRIBE";
+    private static final String UNSUBSCRIBE = "UNSUBSCRIBE";
 
     private static final HashDatabase db = new HashDatabase();
 
@@ -49,7 +50,7 @@ class ServerControl {
     static void serverClient(Socket client, String secret, List<InetSocketAddress> servers, boolean isSecure) {
 
     	SubscriptionManager subManager = new SubscriptionManager(servers, isSecure);
-    	subManager.listenTo(db);
+    	//subManager.listenTo(db);
     	
         try (Socket clientSocket = client) {
             JSONReader newResource;
@@ -203,6 +204,9 @@ class ServerControl {
                             		throw new RuntimeException();
                             	}
                             	break;
+                            case UNSUBSCRIBE:
+                                
+                                break;
                             default:
                                 JsonObject errorMessage = new JsonObject();
                                 errorMessage.addProperty("response", "error");

@@ -5,10 +5,13 @@ import JSON.JSONReader;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.awt.*;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.Scanner;
 import java.util.logging.*;
 
 /**
@@ -78,6 +81,11 @@ public class Client {
                     logger.fine("[SENT] - " + commandJsonString);
                 }
                 output.flush();
+            }
+            if (Connection.command.equals("SUBSCRIBE")) {
+                //listen to the client's console input
+                Thread listener = new Thread(() -> unsubscribe(commandJsonString, output));
+                listener.start();
             }
             //to check the input in a short period
             socket.setSoTimeout(20);
@@ -192,6 +200,33 @@ public class Client {
         } catch (IOException e) {
             logger.warning("[ERROR] - Resources download failed!");
             e.printStackTrace();
+        }
+    }
+
+    private static void unsubscribe(String message, DataOutputStream output) {
+        if (readFromConsole()) {
+            try {
+                String unsubscribeMessage = Connection.generateUnsubscribeMessage(message);
+                if (unsubscribeMessage != null) {
+                    output.writeUTF(unsubscribeMessage);
+                    if (Connection.debugSwitch) {
+                        logger.fine("[SENT] - " + unsubscribeMessage);
+                    }
+                    output.flush();
+                }
+            } catch (IOException e) {
+                logger.warning("Cannot close socket connection.");
+            }
+        }
+    }
+
+    private static boolean readFromConsole() {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            String next = scanner.nextLine();
+            if (next.equals("\r") || next.equals("\n") || next.equals("")) {
+                return true;
+            }
         }
     }
 

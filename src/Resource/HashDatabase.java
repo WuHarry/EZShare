@@ -45,6 +45,7 @@ public class HashDatabase implements SubscriptionService<Resource, JSONReader> {
     public HashDatabase() {
         lock = new ReentrantReadWriteLock();
         this.db = new HashMap<String, ChannelDB>();
+
         //Add a new query
         List<String> tags = new ArrayList<String>();
         tags.add("jpg");
@@ -156,9 +157,11 @@ public class HashDatabase implements SubscriptionService<Resource, JSONReader> {
             channelDB.uriMap.put(res.getUri(), res);
             //update the size of the database
             size++;
-            for(Subscriber<Resource, JSONReader> s: subscribers){
-            	s.notifySubscriber(res);
-            }
+//            if(!subscribers.isEmpty()){
+//                for(Subscriber<Resource, JSONReader> s: subscribers){
+//                    s.notifySubscriber(res);
+//                }
+//            }
         } finally {
             lock.writeLock().unlock();
         }
