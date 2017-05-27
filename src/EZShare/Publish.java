@@ -52,6 +52,6 @@ class Publish {
 
         //Add resource to database.
         db.insertResource(new Resource(name, description, Arrays.asList(tags),
-                uri, channel, owner, ezserver));
+                          uri, channel, owner, ezserver));
     }
 }

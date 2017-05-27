@@ -173,7 +173,7 @@ public class HashDatabase implements SubscriptionService<Resource, JSONReader> {
         try{
             for(Subscriber<Resource, JSONReader> s: subscribers){
           	  s.notifySubscriber(res);
-      	  }
+      	    }
         }finally{
         	subscribeLock.readLock().unlock();
         }
