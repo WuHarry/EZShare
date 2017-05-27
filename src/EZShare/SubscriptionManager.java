@@ -17,6 +17,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.sun.media.jfxmedia.logging.Logger;
 
 import Exceptions.FailedServerSubscriptionException;
 import Exceptions.InvalidResourceException;
@@ -228,8 +229,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 					try {
 						send(subscriber, reply);
 					} catch (IOException e) {
-						// TODO Auto-generated catch block, if exception connection broken.
-						e.printStackTrace();
+						unsubscribe(subscriber.id, subscriber.socket);
 					}
 				}
 			}
@@ -261,7 +261,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 		}
 	}
 	
-	private boolean unsubscribe(String id, Socket socket) throws IOException{
+	private boolean unsubscribe(String id, Socket socket){
 		boolean endThread = false;
 		Server.logger.fine("Unsubscribing " + id + " from subscription manager.");
 		if(this.subscriberThreads.containsKey(id)){
@@ -290,8 +290,13 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 			//Send message
 			JsonObject output = new JsonObject();
 			output.addProperty("resultSize", subscriber.hits);
-			subscriber.out.writeUTF(output.toString());
+			try{
+				subscriber.out.writeUTF(output.toString());
+			}catch(IOException e1){
+				Server.logger.warning("Could not send unsubscription acknowledgement to subscriber.");
+			}
 		}
+		Server.logger.fine("Unsubscribed subscriber.");
 		return endThread;
 	}
 	
@@ -346,8 +351,8 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 				e3.printStackTrace();
 			} catch(IOException e4){
 				//Do something, connection ended
-				e4.printStackTrace();
-				throw new RuntimeException();
+				Server.logger.warning("Lost Connection with client.");
+				running = false;
 			}
 		}
 	}
@@ -376,8 +381,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 					}
 				}
 			}catch(IOException e1){
-				e1.printStackTrace();
-				throw new RuntimeException();
+				Server.logger.warning("Lost connection to client.");
 			} catch (MissingComponentException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

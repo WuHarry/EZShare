@@ -1,5 +1,7 @@
 package EZShare;
 
+import java.io.IOException;
+
 /**
  * Interface for a class which subscribes to a database which can be queried and notifies subscriber when 
  * events occur which may motivate a query.
@@ -12,6 +14,7 @@ public interface Subscriber<T, Q> {
 	/**
 	 * Notify a subscriber that it should query the entire subService.
 	 * @param subService The SubscriptionService to be queried by the subscriber.
+	 * @throws IOException 
 	 */
 	public void notifySubscriber(SubscriptionService<T, Q> subService);
 	
