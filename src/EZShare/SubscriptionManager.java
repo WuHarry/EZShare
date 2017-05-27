@@ -237,13 +237,18 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 					List<Resource> reply = Collections.emptyList();
 					try {
 						reply = subService.query(template);
-					} catch (InvalidResourceException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					try {
 						send(subscriber, reply);
-					} catch (IOException e) {
+					} catch (InvalidResourceException e1) {
+						JsonObject errorMessage = new JsonObject();
+						errorMessage.addProperty("response", "error");
+						errorMessage.addProperty("errorMessage", "invalid resourceTemplate");
+						try{
+							subscriber.out.writeUTF(errorMessage.toString());
+							subscriber.out.flush();
+						}catch(IOException e3){
+							unsubscribe(subscriber.id, subscriber.socket);
+						}
+					}catch (IOException e2) {
 						unsubscribe(subscriber.id, subscriber.socket);
 					}
 				}
@@ -262,11 +267,9 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 				for(JSONReader template: subscriber.resourceTemplates){
 					if(match(template, obj)){
 						try {
-							
 							send(subscriber, obj);
 						} catch (IOException e) {
-							//TODO: Connection broken, should do something.
-							e.printStackTrace();
+							this.unsubscribe(subscriber.id, subscriber.socket);
 						}
 					}
 				}
@@ -307,6 +310,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 			output.addProperty("resultSize", subscriber.hits);
 			try{
 				subscriber.out.writeUTF(output.toString());
+				subscriber.out.flush();
 			}catch(IOException e1){
 				Server.logger.warning("Could not send unsubscription acknowledgement to subscriber.");
 			}
@@ -328,44 +332,66 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 		boolean running = true;
 		while(running){
 			try{
-				String message = input.readUTF();
-				if(JSONReader.isJSONValid(message)){
-					JSONReader command = new JSONReader(message);
-					switch(command.getCommand()){
-					case SUBSCRIBE:
-						Common.checkNull(command);
-						String id;
-						if((id = command.getSubscriptionID()) == null){
-							throw new MissingComponentException("Missing ID");
+				try{
+					String message = input.readUTF();
+					if(JSONReader.isJSONValid(message)){
+						JSONReader command = new JSONReader(message);
+						switch(command.getCommand()){
+						case SUBSCRIBE:
+							Common.checkNull(command);
+							String id;
+							if((id = command.getSubscriptionID()) == null){
+								throw new MissingComponentException("Missing ID");
+							}
+							this.subscribe(command, clientSocket, input, output);
+							JsonObject reply = new JsonObject();
+							reply.addProperty("response", "success");
+							reply.addProperty("id", id);
+							Server.logger.info("Subscribed new client: " + id + ".");
+							output.writeUTF(reply.toString());
+	                		Server.logger.fine("[SENT] - " + reply.toString());
+	                		output.flush();
+							break;
+						case UNSUBSCRIBE:
+							if((id = command.getSubscriptionID()) == null){
+								throw new MissingComponentException("Missing ID");
+							}
+							running = this.unsubscribe(id, clientSocket);
+							break;
+						default:
+							break;
 						}
-						this.subscribe(command, clientSocket, input, output);
-						JsonObject reply = new JsonObject();
-						reply.addProperty("response", "success");
-						reply.addProperty("id", id);
-						Server.logger.info("Subscribed new client: " + id + ".");
-						output.writeUTF(reply.toString());
-                		Server.logger.fine("[SENT] - " + reply.toString());
-						break;
-					case UNSUBSCRIBE:
-						if((id = command.getSubscriptionID()) == null){
-							throw new MissingComponentException("Missing ID");
-						}
-						running = this.unsubscribe(id, clientSocket);
-						break;
-					default:
-						break;
 					}
+				}catch(SocketTimeoutException e1){
+					//Do nothing and continue reading after timeout
+				} catch (MissingComponentException e2) {
+					if(e2.getMessage().equals("Missing ID")){
+						//missing id
+	        			JsonObject errorMessage = new JsonObject();
+	            		errorMessage.addProperty("response", "error");
+	            		errorMessage.addProperty("errorMessage", "missing resourceTemplate");
+	            		output.writeUTF(errorMessage.toString());
+	            		output.flush();
+					}else{
+						//missing resource
+	        			JsonObject errorMessage = new JsonObject();
+	            		errorMessage.addProperty("response", "error");
+	            		errorMessage.addProperty("errorMessage", "missing resourceTemplate");
+	            		output.writeUTF(errorMessage.toString());
+	            		output.flush();
+					}
+				} catch (InvalidResourceException e3) {
+					JsonObject errorMessage = new JsonObject();
+	        		errorMessage.addProperty("response", "error");
+	        		errorMessage.addProperty("errorMessage", "invalid resourceTemplate");
+	        		output.writeUTF(errorMessage.toString());
+	        		output.flush();
+				} catch(IOException e4){
+					Server.logger.warning("Lost Connection with client.");
+					running = false;
 				}
-			}catch(SocketTimeoutException e1){
-				//Do nothing and continue reading after timeout
-			} catch (MissingComponentException e2) {
-				// TODO Auto-generated catch block
-				e2.printStackTrace();
-			} catch (InvalidResourceException e3) {
-				// TODO Auto-generated catch block
-				e3.printStackTrace();
-			} catch(IOException e4){
-				//Do something, connection ended
+			}catch(IOException e5){
+				//Means connection lost when error message sent
 				Server.logger.warning("Lost Connection with client.");
 				running = false;
 			}

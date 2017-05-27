@@ -190,7 +190,7 @@ class ServerControl {
                             		String id;
                             		Common.checkNull(newResource);
                             		if((id = newResource.getSubscriptionID()) == null){
-                            			throw new MissingComponentException("Missing id");
+                            			throw new MissingComponentException("Missing ID");
                             		}
                             		subManager.subscribe(newResource, clientSocket, input, output);
                             		JsonObject message = new JsonObject();
@@ -201,9 +201,27 @@ class ServerControl {
                             		logger.fine("[SENT] - " + message.toString());
                             		running = false;
                             	}catch(InvalidResourceException e1){
-                            		throw new RuntimeException();
+                            		JsonObject errorMessage = new JsonObject();
+                            		errorMessage.addProperty("response", "error");
+                            		errorMessage.addProperty("errorMessage", "invalid resourceTemplate");
+                            		output.writeUTF(errorMessage.toString());
+                            		output.flush();
                             	}catch(MissingComponentException e2){
-                            		throw new RuntimeException();
+                            		if(e2.getMessage().equals("Missing ID")){
+                            			//missing id
+                            			JsonObject errorMessage = new JsonObject();
+                                		errorMessage.addProperty("response", "error");
+                                		errorMessage.addProperty("errorMessage", "missing resourceTemplate");
+                                		output.writeUTF(errorMessage.toString());
+                                		output.flush();
+                            		}else{
+                            			//missing resource
+                            			JsonObject errorMessage = new JsonObject();
+                                		errorMessage.addProperty("response", "error");
+                                		errorMessage.addProperty("errorMessage", "missing resourceTemplate");
+                                		output.writeUTF(errorMessage.toString());
+                                		output.flush();
+                            		}
                             	}
                             	break;
                             default:
