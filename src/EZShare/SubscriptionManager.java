@@ -36,7 +36,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 	
 	private ReadWriteLock lock;
 	private List<Subscriber> subscribers;
-	private Map<String, Thread> subscriberThreads;
+	private Map<Pair<String,Socket>, Subscriber> subscriberMap;
 	private Map<Socket, Integer> connections;
 	private Map<InetSocketAddress,ServerConnection> serverConnections;
 	private List<InetSocketAddress> servers;
@@ -139,7 +139,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 	public SubscriptionManager(List<InetSocketAddress> servers, boolean isSecure) {
 		lock = new ReentrantReadWriteLock();
 		subscribers = new ArrayList<Subscriber>();
-		subscriberThreads = new HashMap<String, Thread>();
+		subscriberMap = new HashMap<Pair<String,Socket>, Subscriber>();
 		serverConnections = new HashMap<InetSocketAddress,ServerConnection>();
 		this.servers = servers;
 		this.isSecure = isSecure;
@@ -186,18 +186,18 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 	public void subscribe(JSONReader newResource, Socket clientSocket, DataInputStream input, DataOutputStream output) throws InvalidResourceException, IOException{
 		lock.writeLock().lock();
 		try{
-			if(subscriberThreads.containsKey(newResource.getSubscriptionID())){
-				//TODO: Already has subscription for that id, do something
-				
-			}else{
-				
-			}
 			Thread listenThread = null;
+			Subscriber subscriber = null;
+			if(subscriberMap.containsKey(newResource.getSubscriptionID()) && subscriberMap.get(newResource.getSubscriptionID()).socket == clientSocket){
+				subscriber = subscriberMap.get(newResource.getSubscriptionID());
+			}else{
+				subscriber = new Subscriber(newResource.getSubscriptionID(), input, output, listenThread, clientSocket, newResource.getRelay());
+				subscriberMap.put(new Pair<String,Socket>(newResource.getSubscriptionID(), clientSocket), subscriber);
+			}
 			if(!(this.connections.containsKey(clientSocket) && this.connections.get(clientSocket) > 0)){
 				//Start new thread for listening to unsubscribe, then returns and finishes original thread.
 				listenThread = new Thread(()->listenToSubscriber(clientSocket, input, output));
 			}
-			Subscriber subscriber = new Subscriber(newResource.getSubscriptionID(), input, output, listenThread, clientSocket, newResource.getRelay());
 			subscriber.resourceTemplates.add(newResource);
 			if(newResource.getRelay() == true){
 				//relay to all servers in server list
@@ -210,7 +210,6 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 			}
 			if(listenThread != null){
 				listenThread.start();
-				subscriberThreads.put(newResource.getSubscriptionID(), listenThread);
 			}
 			if(!connections.containsKey(clientSocket)){
 				connections.put(clientSocket, 1);
@@ -278,7 +277,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 	private boolean unsubscribe(String id, Socket socket){
 		boolean endThread = false;
 		Server.logger.fine("Unsubscribing " + id + " from subscription manager.");
-		if(this.subscriberThreads.containsKey(id)){
+		if(this.subscriberMap.containsKey(new Pair<String, Socket>(id,socket))){
 			//Subscriber exists, remove it and close connections if necessary.
 			Subscriber subscriber = null;
 			for(Subscriber sub: subscribers){
@@ -298,7 +297,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 			connections.put(socket, --conn);
 			if(conn == 0){
 				connections.remove(socket);
-				this.subscriberThreads.remove(id);
+				this.subscriberMap.remove(new Pair<String,Socket>(id, socket));
 				endThread = true;
 			}
 			//Send message
