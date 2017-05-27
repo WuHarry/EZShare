@@ -173,7 +173,7 @@ class ServerControl {
                                 break;
                             case EXCHANGE:
                                 try {
-                                    Exchange.exchange(newResource, secure);
+                                    Exchange.exchange(newResource, servers);
                                     successResponse(EXCHANGE, output);
                                 } catch (InvalidServerException e1) {
                                     logger.warning(e1.getLocalizedMessage());
