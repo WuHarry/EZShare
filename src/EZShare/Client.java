@@ -58,7 +58,7 @@ public class Client {
         try {
             Socket socket;
             if (Connection.secureConnection) {
-                port = connection.securePort;
+                port = connection.port;
                 socket = Common.initClientSSL().createSocket(ip, port);
             } else {
                 port = connection.port;
