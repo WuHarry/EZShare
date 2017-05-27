@@ -288,7 +288,7 @@ public class SubscriptionManager implements Subscriber<Resource, JSONReader> {
 			}
 			if(subscriber == null){
 				//Should never happen, throw exception.
-				throw new IllegalStateException("Found thread for subscriber but not the subscriber.");
+				throw new IllegalStateException("SubscriptionManager corrupted (subscriber exists in map but not list).");
 			}
 			//Remove subscriber
 			subscribers.remove(subscriber);
