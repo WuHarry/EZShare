@@ -171,9 +171,9 @@ public class HashDatabase implements SubscriptionService<Resource, JSONReader> {
         }
         subscribeLock.readLock().lock();
         try{
-//            for(Subscriber<Resource, JSONReader> s: subscribers){
-//          	  s.notifySubscriber(res);
-//      	  }
+            for(Subscriber<Resource, JSONReader> s: subscribers){
+          	  s.notifySubscriber(res);
+      	  }
         }finally{
         	subscribeLock.readLock().unlock();
         }
