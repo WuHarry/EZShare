@@ -3,8 +3,9 @@
 ####                    Project 2 - Security and Subscribing
 ##### Team Members:
 
-* Yahang Wu(Harry)  
+* Yahang Wu(Harry)
+* Ryan Naughton
 * Muhammad Taimoor(Timmy)
 * Danni Zhao
-* Ryan Naughton
+
 
